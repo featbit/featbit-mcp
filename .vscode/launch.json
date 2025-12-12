@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Aspire: Launch AppHost",
+      "type": "aspire",
+      "request": "launch",
+      "program": "${workspaceFolder}/FeatBit/FeatBit.AppHost/FeatBit.AppHost.csproj"
+    },
+    {
+      "name": "MCP Server (Standalone)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-mcpserver",
+      "program": "${workspaceFolder}/FeatBit/FeatBit.McpServer/bin/Debug/net10.0/win-x64/FeatBit.McpServer.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/FeatBit/FeatBit.McpServer",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}
