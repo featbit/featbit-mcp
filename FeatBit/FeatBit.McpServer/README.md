@@ -1,3 +1,31 @@
+-----
+Real Content of FeatBit/FeatBit.McpServer/README.md
+-----
+
+# MCP Server for FeatBit
+
+## Introduction
+
+We use Microsoft's MCP (Model Context Protocol) server framework to build a feature flag management server. For now, this MCP helps AI Coding Agent to manage FeatBit, it includes:
+- Deployment of FeatBit
+- Integration with FeatBit's SDKs
+- Best practices for feature flag management
+- Troubleshooting common issues
+
+## Design Pattern
+
+1. Limit the number of tools that AI agents can use to interact with FeatBit.
+2. Add gateway in each tool to validate the input parameters and redirect to the correct internal tool.
+  - e.g. One `GenerateIntegrationCode` tool to handle all SDK code generation requests for different languages and topics.
+  - e.g. troubleshooting tool to handle all issues and use RAG or grep to find the solution from the knowledge base.
+3. 
+
+
+
+-----
+Below is the complete content of the file located at FeatBit/FeatBit.McpServer/README.md:
+-----
+
 # MCP Server
 
 This README was created using the C# MCP server project template.
