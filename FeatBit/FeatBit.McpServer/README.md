@@ -18,7 +18,7 @@ We use Microsoft's MCP (Model Context Protocol) server framework to build a feat
 2. Add gateway in each tool to validate the input parameters and redirect to the correct internal tool.
   - e.g. One `GenerateIntegrationCode` tool to handle all SDK code generation requests for different languages and topics.
   - e.g. troubleshooting tool to handle all issues and use RAG or grep to find the solution from the knowledge base.
-3. 
+3. Do we need a interface to return which parameters and tool the ai should call next?
 
 
 
