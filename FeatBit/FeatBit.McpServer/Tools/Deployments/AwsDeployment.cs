@@ -57,4 +57,16 @@ public static class AwsDeployment
         NOT IMPLEMENTED.
         """;
     }
+
+    private static string GetEc2Tutorial()
+    {
+        return """
+        # ============================================================================
+        # FeatBit AWS EC2 Deployment Tutorial
+        # ============================================================================
+        
+        
+        NOT IMPLEMENTED.
+        """;
+    }
 }

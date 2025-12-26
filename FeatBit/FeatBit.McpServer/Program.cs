@@ -1,7 +1,16 @@
+using FeatBit.McpServer.Extensions;
+using FeatBit.McpServer.Tools.Sdks;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Aspire service defaults for observability (OpenTelemetry, health checks, etc.)
 builder.AddServiceDefaults();
+
+// Add AI chat client (OpenAI, Azure OpenAI, etc.)
+builder.Services.AddAiChatClient(builder.Configuration);
+
+// Register SDK services
+builder.Services.AddSingleton<NetServerSdk>();
 
 // Add the MCP server with HTTP transport
 builder.Services
