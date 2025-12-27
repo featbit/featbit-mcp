@@ -1,3 +1,7 @@
+---
+description: "Guide for integrating FeatBit SDK in ASP.NET Core apps with DI (dependency injection), including setup, evaluating flags (bool/string/int/double/json) with authenticated/anonymous users, tracking events, tracking events for A/B testing, and configuration from appsettings.json"
+---
+
 # FeatBit .NET Server SDK - ASP.NET Core Integration
 
 This document provides comprehensive guidance for integrating the FeatBit .NET Server SDK into ASP.NET Core applications using dependency injection.

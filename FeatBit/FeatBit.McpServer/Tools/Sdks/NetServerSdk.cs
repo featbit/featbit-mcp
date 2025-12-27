@@ -29,23 +29,108 @@ public class NetServerSdk
     /// </summary>
     private record SdkDocumentOption(
         string FileName,
-        string Description,
-        string[] Keywords
+        string Description
     );
 
-    private static readonly SdkDocumentOption[] AvailableDocuments =
-    [
-        new SdkDocumentOption(
-            "NetServerSdkAspNetCore.md",
-            "ASP.NET Core web applications using dependency injection, middleware, and hosted services",
-            ["aspnet", "asp.net", "web", "api", "mvc", "razor", "blazor", "di", "dependency injection", "middleware", "webapi"]
-        ),
-        new SdkDocumentOption(
-            "NetServerSdkConsole.md",
-            "Console applications, worker services, background services, and non-web applications",
-            ["console", "worker", "background", "service", "daemon", "batch", "cli", "command-line", "standalone"]
-        )
-    ];
+    /// <summary>
+    /// Lazy-loaded list of available documents with descriptions extracted from markdown files.
+    /// </summary>
+    private SdkDocumentOption[]? _availableDocuments;
+    
+    private SdkDocumentOption[] AvailableDocuments
+    {
+        get
+        {
+            if (_availableDocuments == null)
+            {
+                _availableDocuments = LoadAvailableDocuments();
+            }
+            return _availableDocuments;
+        }
+    }
+
+    /// <summary>
+    /// Loads available documents and extracts descriptions from markdown files.
+    /// </summary>
+    private SdkDocumentOption[] LoadAvailableDocuments()
+    {
+        var documentFiles = new[] { "NetServerSdkAspNetCore.md", "NetServerSdkConsole.md" };
+        var documents = new List<SdkDocumentOption>();
+
+        foreach (var fileName in documentFiles)
+        {
+            var description = ExtractDescriptionFromMarkdown(fileName);
+            documents.Add(new SdkDocumentOption(fileName, description));
+        }
+
+        return [.. documents];
+    }
+
+    /// <summary>
+    /// Extracts the description from the markdown file's YAML front matter.
+    /// Format:
+    /// ---
+    /// description: "description text"
+    /// ---
+    /// </summary>
+    private string ExtractDescriptionFromMarkdown(string fileName)
+    {
+        try
+        {
+            var content = LoadDocumentContent(fileName);
+            
+            // Check if file starts with YAML front matter (---)
+            if (!content.TrimStart().StartsWith("---"))
+            {
+                return GetFallbackDescription(fileName);
+            }
+
+            var lines = content.Split('\n');
+            var inFrontMatter = false;
+            var frontMatterStarted = false;
+
+            foreach (var line in lines.Take(20)) // Check first 20 lines
+            {
+                var trimmed = line.Trim();
+                
+                // Start of front matter
+                if (trimmed == "---" && !frontMatterStarted)
+                {
+                    inFrontMatter = true;
+                    frontMatterStarted = true;
+                    continue;
+                }
+                
+                // End of front matter
+                if (trimmed == "---" && frontMatterStarted)
+                {
+                    break;
+                }
+                
+                // Parse description field
+                if (inFrontMatter && trimmed.StartsWith("description:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var description = trimmed.Substring("description:".Length).Trim();
+                    // Remove quotes if present
+                    description = description.Trim('"', '\'');
+                    return description;
+                }
+            }
+        }
+        catch
+        {
+            // Ignore errors during description extraction
+        }
+
+        return GetFallbackDescription(fileName);
+    }
+
+    private static string GetFallbackDescription(string fileName)
+    {
+        return fileName.Contains("AspNetCore", StringComparison.OrdinalIgnoreCase) 
+            ? "ASP.NET Core applications" 
+            : "Console and worker applications";
+    }
 
     /// <summary>
     /// Selects the most appropriate SDK documentation file based on the user's topic.
@@ -66,12 +151,10 @@ public class NetServerSdk
         }
         catch (Exception ex)
         {
-            // Log error and fall back to keyword matching
-            Console.Error.WriteLine($"AI selection failed: {ex.Message}. Falling back to keyword matching.");
+            // Log error and fall back to default
+            Console.Error.WriteLine($"AI selection failed: {ex.Message}. Using default document.");
+            return AvailableDocuments[0].FileName;
         }
-
-        // Fallback: keyword-based selection
-        return SelectWithKeywords(topic);
     }
 
     /// <summary>
@@ -79,12 +162,15 @@ public class NetServerSdk
     /// </summary>
     private async Task<string> SelectWithAIAsync(string topic, CancellationToken cancellationToken)
     {
-        var systemPrompt = """
+        // Build dynamic prompt with available documents and their descriptions
+        var documentList = string.Join("\n", AvailableDocuments.Select((doc, index) => 
+            $"{index + 1}. {doc.FileName} - {doc.Description}"));
+
+        var systemPrompt = $$"""
             You are an expert .NET developer assistant helping to select the most appropriate FeatBit SDK documentation.
             
             Available documentation files:
-            1. NetServerSdkAspNetCore.md - For ASP.NET Core applications (web apps, APIs, MVC, Razor, Blazor) using DI
-            2. NetServerSdkConsole.md - For console apps, worker services, background services, CLI tools
+            {{documentList}}
             
             Based on the user's topic/question, respond with ONLY the filename (e.g., "NetServerSdkAspNetCore.md" or "NetServerSdkConsole.md").
             Do not include any explanation or additional text.
@@ -116,29 +202,9 @@ public class NetServerSdk
             return selectedFile;
         }
 
-        // If AI returns invalid response, fall back to keyword matching
-        Console.Error.WriteLine($"AI returned unexpected filename: {selectedFile}. Falling back to keyword matching.");
-        return SelectWithKeywords(topic);
-    }
-
-    /// <summary>
-    /// Fallback: Simple keyword-based selection.
-    /// </summary>
-    private string SelectWithKeywords(string topic)
-    {
-        var normalizedTopic = topic.ToLowerInvariant();
-
-        foreach (var doc in AvailableDocuments)
-        {
-            if (doc.Keywords.Any(keyword => normalizedTopic.Contains(keyword)))
-            {
-                return doc.FileName;
-            }
-        }
-
-        // Default to ASP.NET Core if no match
+        // If AI returns invalid response, fall back to simple selection
+        Console.Error.WriteLine($"AI returned unexpected filename: {selectedFile}. Falling back to default.");
         return AvailableDocuments[0].FileName;
-    }
 
     private string LoadDocumentContent(string fileName)
     {
@@ -165,11 +231,5 @@ public class NetServerSdk
 
         // Final fallback
         return $"❌ SDK documentation '{fileName}' not found. Please ensure the resource file is properly embedded.";
-    }
-
-    // Keep the synchronous version for backward compatibility
-    public string GenerateSdkGuide(string? topic = null)
-    {
-        return GenerateSdkGuideAsync(topic).GetAwaiter().GetResult();
     }
 }

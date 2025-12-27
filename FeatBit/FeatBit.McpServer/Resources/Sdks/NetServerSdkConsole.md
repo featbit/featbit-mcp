@@ -1,3 +1,7 @@
+---
+description: "Guide for integrating FeatBit SDK in console apps and worker services, covering SDK initialization, evaluating flags (bool/string/int/double/json) with authenticated/anonymous users, tracking events, offline mode with bootstrap, and DI setup for background services"
+---
+
 # FeatBit .NET Server SDK - Console Application
 
 Source: https://github.com/featbit/featbit-dotnet-sdk/blob/main/README.md
