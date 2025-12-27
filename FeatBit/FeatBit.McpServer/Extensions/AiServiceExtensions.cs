@@ -1,6 +1,7 @@
 using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
+using OpenAI;
 
 namespace FeatBit.McpServer.Extensions;
 
@@ -64,7 +65,7 @@ public static class AiServiceExtensions
         }
 
         logger.LogInformation("Initializing OpenAI chat client with model: {Model}", model);
-        return new OpenAI.Chat.ChatClient(model, apiKey).AsChatClient();
+        return new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient();
     }
 
     private static IChatClient? CreateAzureOpenAIChatClient(IConfiguration configuration, ILogger logger)
@@ -80,8 +81,11 @@ public static class AiServiceExtensions
         }
 
         logger.LogInformation("Initializing Azure OpenAI chat client with endpoint: {Endpoint}, deployment: {Deployment}", endpoint, deployment);
-        return new Azure.AI.OpenAI.AzureOpenAIClient(new Uri(endpoint), new Azure.AzureKeyCredential(apiKey))
-            .AsChatClient(deployment);
+        return new AzureOpenAIClient(
+            new Uri(endpoint), 
+            new AzureKeyCredential(apiKey))
+            .GetChatClient(deployment)
+            .AsIChatClient();
     }
 
     private static IChatClient? CreateAnthropicChatClient(IConfiguration configuration, ILogger logger)

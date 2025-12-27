@@ -205,6 +205,7 @@ public class NetServerSdk
         // If AI returns invalid response, fall back to simple selection
         Console.Error.WriteLine($"AI returned unexpected filename: {selectedFile}. Falling back to default.");
         return AvailableDocuments[0].FileName;
+    }
 
     private string LoadDocumentContent(string fileName)
     {
