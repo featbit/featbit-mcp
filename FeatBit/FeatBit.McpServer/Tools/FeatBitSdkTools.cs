@@ -12,7 +12,7 @@ namespace FeatBit.McpServer.Tools;
 public class FeatBitSdkTools(ILogger<FeatBitSdkTools> logger, NetServerSdk netServerSdk)
 {
     [McpServerTool]
-    [Description("Get FeatBit SDK integration code examples for the specified sdk and topic. Helps developers quickly integrate FeatBit into their applications.")]
+    [Description("Only call when user explicitly asks for FeatBit SDK cases. Get FeatBit SDK integration code examples for the specified sdk and topic. Helps developers quickly integrate FeatBit into their applications, with best practice.")]
     public async Task<string> GenerateIntegrationCode(
         [Description("Which SDK would you like to use? Options: 'dotnet-server-sdk', 'dotnet-console-sdk', 'dotnet-client-sdk', 'javascript-client-sdk', 'react-sdk', 'node-sdk', 'typescript-client-sdk', 'java-sdk', 'python-sdk', 'go-sdk', 'node-sdk'")]
         string sdk,
@@ -23,7 +23,7 @@ public class FeatBitSdkTools(ILogger<FeatBitSdkTools> logger, NetServerSdk netSe
 
         var code = sdk.ToLower() switch
         {
-            ".net server sdk" => await netServerSdk.GenerateSdkGuideAsync(topic),
+            "dotnet-server-sdk" => await netServerSdk.GenerateSdkGuideAsync(topic),
             _ => "Please enter a valid SDK option. Supported options are: '.net server sdk', '.net client sdk', 'javascript client sdk', 'react sdk', 'nodejs sdk', 'typescript client sdk', 'java sdk', 'python sdk', 'go sdk', 'node sdk'."
         };
 

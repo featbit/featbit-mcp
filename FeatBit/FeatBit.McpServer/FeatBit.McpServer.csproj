@@ -26,10 +26,10 @@
     <None Include="Resources\Deployments\*.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- Include SDK documentation as both embedded and file resources -->
+  <!-- Include SDK documentation (including nested folders) as both embedded and file resources -->
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Sdks\*.md" />
-    <None Include="Resources\Sdks\*.md" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="Resources\Sdks\**\*.md" />
+    <None Include="Resources\Sdks\**\*.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

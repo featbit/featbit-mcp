@@ -13,8 +13,7 @@ builder.Services.AddAiChatClient(builder.Configuration);
 builder.Services.AddSingleton<NetServerSdk>();
 
 // Register tool classes explicitly for DI
-builder.Services.AddSingleton<FeatBit.McpServer.Tools.FeatBitSdkTools>();
-builder.Services.AddSingleton<FeatBit.McpServer.Tools.RandomNumberTools>();
+//builder.Services.AddSingleton<FeatBit.McpServer.Tools.FeatBitSdkTools>();
 
 // Add the MCP server with HTTP transport
 builder.Services

@@ -209,7 +209,7 @@ public class NetServerSdk
 
     private string LoadDocumentContent(string fileName)
     {
-        var resourcePath = $"FeatBit.McpServer.Resources.Sdks.{fileName}";
+        var resourcePath = $"FeatBit.McpServer.Resources.Sdks.DotNETSdk.{fileName}";
         
         // Try to read from embedded resource first (production)
         var assembly = Assembly.GetExecutingAssembly();
@@ -223,7 +223,7 @@ public class NetServerSdk
 
         // Fallback: try to read from file system (development)
         var executablePath = AppContext.BaseDirectory;
-        var markdownPath = Path.Combine(executablePath, "Resources", "Sdks", fileName);
+        var markdownPath = Path.Combine(executablePath, "Resources", "Sdks", "DotNETSdk", fileName);
 
         if (File.Exists(markdownPath))
         {
