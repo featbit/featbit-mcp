@@ -1,142 +1,54 @@
-using System.Reflection;
 using Microsoft.Extensions.AI;
 
 namespace FeatBit.McpServer.Tools.Sdks;
 
 public class NetServerSdk
 {
+    private readonly DocumentLoader _documentLoader;
     private readonly IChatClient _chatClient;
+    private const string ResourceSubPath = "Sdks.DotNETSdk";
 
     /// <summary>
     /// Creates a new instance of NetServerSdk with dependency injection.
     /// </summary>
-    public NetServerSdk(IChatClient chatClient)
+    public NetServerSdk(DocumentLoader documentLoader, IChatClient chatClient)
     {
+        _documentLoader = documentLoader;
         _chatClient = chatClient;
     }
-
-    public async Task<string> GenerateSdkGuideAsync(string? topic = null, CancellationToken cancellationToken = default)
-    {
-        // Use AI to select the most appropriate documentation file
-        var selectedFileName = await SelectDocumentAsync(topic, cancellationToken);
-        
-        // Load the selected document
-        return LoadDocumentContent(selectedFileName);
-    }
-
-    /// <summary>
-    /// Describes the available SDK documentation files.
-    /// </summary>
-    private record SdkDocumentOption(
-        string FileName,
-        string Description
-    );
 
     /// <summary>
     /// Lazy-loaded list of available documents with descriptions extracted from markdown files.
     /// </summary>
-    private SdkDocumentOption[]? _availableDocuments;
+    private DocumentLoader.DocumentOption[]? _availableDocuments;
     
-    private SdkDocumentOption[] AvailableDocuments
+    private DocumentLoader.DocumentOption[] AvailableDocuments
     {
         get
         {
             if (_availableDocuments == null)
             {
-                _availableDocuments = LoadAvailableDocuments();
+                var documentFiles = new[] { "NetServerSdkAspNetCore.md", "NetServerSdkConsole.md" };
+                _availableDocuments = _documentLoader.LoadAvailableDocuments(documentFiles, ResourceSubPath);
             }
             return _availableDocuments;
         }
     }
 
-    /// <summary>
-    /// Loads available documents and extracts descriptions from markdown files.
-    /// </summary>
-    private SdkDocumentOption[] LoadAvailableDocuments()
+    public async Task<string> GenerateSdkGuideAsync(string? topic = null, CancellationToken cancellationToken = default)
     {
-        var documentFiles = new[] { "NetServerSdkAspNetCore.md", "NetServerSdkConsole.md" };
-        var documents = new List<SdkDocumentOption>();
-
-        foreach (var fileName in documentFiles)
-        {
-            var description = ExtractDescriptionFromMarkdown(fileName);
-            documents.Add(new SdkDocumentOption(fileName, description));
-        }
-
-        return [.. documents];
+        // Use AI to select the most appropriate documentation file
+        var selectedFileName = await SelectDocumentWithAIAsync(topic, cancellationToken);
+        
+        // Load the selected document
+        return _documentLoader.LoadDocumentContent(selectedFileName, ResourceSubPath);
     }
 
     /// <summary>
-    /// Extracts the description from the markdown file's YAML front matter.
-    /// Format:
-    /// ---
-    /// description: "description text"
-    /// ---
+    /// Selects the most appropriate SDK documentation file based on the user's topic using AI.
+    /// Falls back to the first document if AI is not configured or fails.
     /// </summary>
-    private string ExtractDescriptionFromMarkdown(string fileName)
-    {
-        try
-        {
-            var content = LoadDocumentContent(fileName);
-            
-            // Check if file starts with YAML front matter (---)
-            if (!content.TrimStart().StartsWith("---"))
-            {
-                return GetFallbackDescription(fileName);
-            }
-
-            var lines = content.Split('\n');
-            var inFrontMatter = false;
-            var frontMatterStarted = false;
-
-            foreach (var line in lines.Take(20)) // Check first 20 lines
-            {
-                var trimmed = line.Trim();
-                
-                // Start of front matter
-                if (trimmed == "---" && !frontMatterStarted)
-                {
-                    inFrontMatter = true;
-                    frontMatterStarted = true;
-                    continue;
-                }
-                
-                // End of front matter
-                if (trimmed == "---" && frontMatterStarted)
-                {
-                    break;
-                }
-                
-                // Parse description field
-                if (inFrontMatter && trimmed.StartsWith("description:", StringComparison.OrdinalIgnoreCase))
-                {
-                    var description = trimmed.Substring("description:".Length).Trim();
-                    // Remove quotes if present
-                    description = description.Trim('"', '\'');
-                    return description;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore errors during description extraction
-        }
-
-        return GetFallbackDescription(fileName);
-    }
-
-    private static string GetFallbackDescription(string fileName)
-    {
-        return fileName.Contains("AspNetCore", StringComparison.OrdinalIgnoreCase) 
-            ? "ASP.NET Core applications" 
-            : "Console and worker applications";
-    }
-
-    /// <summary>
-    /// Selects the most appropriate SDK documentation file based on the user's topic.
-    /// Falls back to keyword matching if AI is not configured or fails.
-    /// </summary>
-    private async Task<string> SelectDocumentAsync(string? topic, CancellationToken cancellationToken = default)
+    private async Task<string> SelectDocumentWithAIAsync(string? topic, CancellationToken cancellationToken = default)
     {
         // If no topic, default to ASP.NET Core (most common scenario)
         if (string.IsNullOrWhiteSpace(topic))
@@ -202,35 +114,8 @@ public class NetServerSdk
             return selectedFile;
         }
 
-        // If AI returns invalid response, fall back to simple selection
+        // If AI returns invalid response, fall back to first document
         Console.Error.WriteLine($"AI returned unexpected filename: {selectedFile}. Falling back to default.");
         return AvailableDocuments[0].FileName;
-    }
-
-    private string LoadDocumentContent(string fileName)
-    {
-        var resourcePath = $"FeatBit.McpServer.Resources.Sdks.DotNETSdk.{fileName}";
-        
-        // Try to read from embedded resource first (production)
-        var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream(resourcePath);
-
-        if (stream != null)
-        {
-            using var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
-        }
-
-        // Fallback: try to read from file system (development)
-        var executablePath = AppContext.BaseDirectory;
-        var markdownPath = Path.Combine(executablePath, "Resources", "Sdks", "DotNETSdk", fileName);
-
-        if (File.Exists(markdownPath))
-        {
-            return File.ReadAllText(markdownPath);
-        }
-
-        // Final fallback
-        return $"❌ SDK documentation '{fileName}' not found. Please ensure the resource file is properly embedded.";
     }
 }

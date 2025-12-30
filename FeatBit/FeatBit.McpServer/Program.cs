@@ -1,4 +1,5 @@
 using FeatBit.McpServer.Extensions;
+using FeatBit.McpServer.Tools;
 using FeatBit.McpServer.Tools.Sdks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,8 +10,12 @@ builder.AddServiceDefaults();
 // Add AI chat client (OpenAI, Azure OpenAI, etc.)
 builder.Services.AddAiChatClient(builder.Configuration);
 
-// Register SDK services
+// Register document loader service (no AI dependency - pure document loading)
+builder.Services.AddSingleton<DocumentLoader>();
+
+// Register SDK services (each decides whether to use AI for document selection)
 builder.Services.AddSingleton<NetServerSdk>();
+builder.Services.AddSingleton<JavascriptSdks>();
 
 // Register tool classes explicitly for DI
 //builder.Services.AddSingleton<FeatBit.McpServer.Tools.FeatBitSdkTools>();

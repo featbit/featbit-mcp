@@ -14,7 +14,7 @@ public class FeatBitSdkTools(ILogger<FeatBitSdkTools> logger, NetServerSdk netSe
     [McpServerTool]
     [Description("Only call when user explicitly asks for FeatBit SDK cases. Get FeatBit SDK integration code examples for the specified sdk and topic. Helps developers quickly integrate FeatBit into their applications, with best practice.")]
     public async Task<string> GenerateIntegrationCode(
-        [Description("Which SDK would you like to use? Options: 'dotnet-server-sdk', 'dotnet-console-sdk', 'dotnet-client-sdk', 'javascript-client-sdk', 'react-sdk', 'node-sdk', 'typescript-client-sdk', 'java-sdk', 'python-sdk', 'go-sdk', 'node-sdk'")]
+        [Description("Which SDK would you like to use? Options: 'dotnet-server-sdk', 'dotnet-console-sdk', 'dotnet-client-sdk', 'javascript-client-sdk', 'react-webapp-sdk', 'react-native-sdk', 'node-sdk', 'openfeature-node-sdk', 'typescript-client-sdk', 'java-sdk', 'python-sdk', 'go-sdk', 'node-sdk'")]
         string sdk,
         [Description("Describe what you're trying to achieve with the FeatBit SDK (e.g., integrate featbit .net sdk in asp.net core project.)")]
         string topic)
