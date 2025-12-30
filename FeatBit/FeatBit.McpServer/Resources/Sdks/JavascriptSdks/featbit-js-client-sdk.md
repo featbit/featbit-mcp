@@ -2,7 +2,7 @@
 description: "Guide for integrating FeatBit Javascript client SDK in web applications."
 ---
 
-# FeatBit Client SDK for JavaScript
+# FeatBit Feature Flag Client SDK for JavaScript
 
 source: https://github.com/featbit/featbit-js-client-sdk/edit/main/README.md
 

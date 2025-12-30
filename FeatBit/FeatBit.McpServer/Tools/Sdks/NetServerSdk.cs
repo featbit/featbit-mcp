@@ -6,7 +6,7 @@ public class NetServerSdk
 {
     private readonly DocumentLoader _documentLoader;
     private readonly IChatClient _chatClient;
-    private const string ResourceSubPath = "Sdks.DotNETSdk";
+    private const string ResourceSubPath = "Sdks.DotNETSdks";
 
     /// <summary>
     /// Creates a new instance of NetServerSdk with dependency injection.

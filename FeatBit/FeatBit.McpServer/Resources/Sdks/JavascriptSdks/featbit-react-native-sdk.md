@@ -2,7 +2,7 @@
 description: "Guide for integrating FeatBit React Native SDK in React Native applications."
 ---
 
-# FeatBit Client-Side SDK for React Native
+# FeatBit Feature Flag Client-Side SDK for React Native
 
 Source: https://github.com/featbit/featbit-react-native-sdk/edit/main/README.md
 

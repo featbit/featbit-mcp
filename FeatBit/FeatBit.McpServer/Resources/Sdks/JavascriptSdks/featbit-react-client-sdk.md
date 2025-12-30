@@ -2,7 +2,7 @@
 description: "Guide for integrating FeatBit React Client SDK in React Or NextJs applications."
 ---
 
-# FeatBit Client-Side SDK for ReactJS
+# FeatBit Feature Flag Client-Side SDK for ReactJS
 
 Source: https://github.com/featbit/featbit-react-client-sdk/edit/main/README.md
 

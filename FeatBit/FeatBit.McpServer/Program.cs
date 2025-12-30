@@ -16,6 +16,8 @@ builder.Services.AddSingleton<DocumentLoader>();
 // Register SDK services (each decides whether to use AI for document selection)
 builder.Services.AddSingleton<NetServerSdk>();
 builder.Services.AddSingleton<JavascriptSdks>();
+builder.Services.AddSingleton<JavaSdks>();
+builder.Services.AddSingleton<PythonSdks>();
 
 // Register tool classes explicitly for DI
 //builder.Services.AddSingleton<FeatBit.McpServer.Tools.FeatBitSdkTools>();

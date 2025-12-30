@@ -2,7 +2,7 @@
 description: "Guide for integrating FeatBit OpenFeature Node.js SDK in applications."
 ---
 
-# FeatBit OpenFeature provider for Node.js SDK
+# FeatBit Feature Flag OpenFeature provider for Node.js SDK
 
 Source: https://github.com/featbit/openfeature-provider-node-server/edit/main/README.md
 

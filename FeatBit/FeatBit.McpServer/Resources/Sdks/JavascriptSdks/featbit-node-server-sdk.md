@@ -2,7 +2,7 @@
 description: "Guide for integrating FeatBit Node Server-Side SDK in applications."
 ---
 
-# FeatBit Server-Side SDK for Node.js
+# FeatBit Feature Flag Server-Side SDK for Node.js
 
 Source: https://github.com/featbit/featbit-node-server-sdk/edit/main/README.md
 

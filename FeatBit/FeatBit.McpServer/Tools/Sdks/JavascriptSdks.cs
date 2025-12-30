@@ -3,7 +3,7 @@ namespace FeatBit.McpServer.Tools.Sdks;
 public class JavascriptSdks
 {
     private readonly DocumentLoader _documentLoader;
-    private const string ResourceSubPath = "Sdks.JavascriptSdk";
+    private const string ResourceSubPath = "Sdks.JavascriptSdks";
 
     /// <summary>
     /// Creates a new instance of JavascriptSdks with dependency injection.
@@ -19,9 +19,12 @@ public class JavascriptSdks
     private static readonly Dictionary<string, string[]> SdkFileMapping = new(StringComparer.OrdinalIgnoreCase)
     {
         { "javascript-client-sdk", ["featbit-js-client-sdk.md"] },
+        { "typescript-client-sdk", ["featbit-js-client-sdk.md"] },
         { "react-webapp-sdk", ["featbit-react-client-sdk.md"] },
         { "react-native-sdk", ["featbit-react-native-client-sdk.md"] },
         { "node-sdk", ["featbit-node-server-sdk.md"] },
+        { "openfeature-js-client-sdk", ["featbit-openfeature-provider-js-client.md",
+        "featbit-js-client-sdk.md"] },
         { "openfeature-node-sdk", ["featbit-openfeature-provider-node-server.md", "featbit-node-server-sdk.md"] }
     };
 
@@ -39,10 +42,10 @@ public class JavascriptSdks
             var contents = documentFiles
                 .Select(file => _documentLoader.LoadDocumentContent(file, ResourceSubPath))
                 .ToArray();
-            
+
             return string.Join("\n\n---\n\n", contents);
         }
-        
+
         // Single document - load directly
         return _documentLoader.LoadDocumentContent(documentFiles[0], ResourceSubPath);
     }
