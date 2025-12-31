@@ -1,17 +1,18 @@
+using FeatBit.McpServer.Infrastructure;
 using Microsoft.Extensions.AI;
 
-namespace FeatBit.McpServer.Tools.Sdks;
+namespace FeatBit.McpServer.Domain.Sdks;
 
 public class NetServerSdk
 {
-    private readonly DocumentLoader _documentLoader;
+    private readonly IDocumentLoader _documentLoader;
     private readonly IChatClient _chatClient;
     private const string ResourceSubPath = "Sdks.DotNETSdks";
 
     /// <summary>
     /// Creates a new instance of NetServerSdk with dependency injection.
     /// </summary>
-    public NetServerSdk(DocumentLoader documentLoader, IChatClient chatClient)
+    public NetServerSdk(IDocumentLoader documentLoader, IChatClient chatClient)
     {
         _documentLoader = documentLoader;
         _chatClient = chatClient;
@@ -20,9 +21,9 @@ public class NetServerSdk
     /// <summary>
     /// Lazy-loaded list of available documents with descriptions extracted from markdown files.
     /// </summary>
-    private DocumentLoader.DocumentOption[]? _availableDocuments;
+    private IDocumentLoader.DocumentOption[]? _availableDocuments;
     
-    private DocumentLoader.DocumentOption[] AvailableDocuments
+    private IDocumentLoader.DocumentOption[] AvailableDocuments
     {
         get
         {

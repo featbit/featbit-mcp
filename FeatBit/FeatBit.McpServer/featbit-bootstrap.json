@@ -1,0 +1,73 @@
+{
+  "messageType": "data-sync",
+  "data": {
+    "eventType": "full",
+    "featureFlags": [
+      {
+        "id": "enable-deployment-tool-id",
+        "name": "Enable Deployment Tool",
+        "key": "enable-deployment-tool",
+        "variation": "true",
+        "variationType": "boolean",
+        "sendToExperiment": false,
+        "exptIncludeAllTargets": false,
+        "disabledVariation": "false",
+        "targetIndividuals": [],
+        "rules": [],
+        "fallthrough": {
+          "dispatchKey": null,
+          "includedInExpt": false,
+          "variations": [
+            {
+              "id": "true",
+              "value": "true"
+            }
+          ]
+        },
+        "variations": [
+          {
+            "id": "true",
+            "value": "true"
+          },
+          {
+            "id": "false",
+            "value": "false"
+          }
+        ]
+      },
+      {
+        "id": "enable-sdk-tool-id",
+        "name": "Enable SDK Tool",
+        "key": "enable-sdk-tool",
+        "variation": "true",
+        "variationType": "boolean",
+        "sendToExperiment": false,
+        "exptIncludeAllTargets": false,
+        "disabledVariation": "false",
+        "targetIndividuals": [],
+        "rules": [],
+        "fallthrough": {
+          "dispatchKey": null,
+          "includedInExpt": false,
+          "variations": [
+            {
+              "id": "true",
+              "value": "true"
+            }
+          ]
+        },
+        "variations": [
+          {
+            "id": "true",
+            "value": "true"
+          },
+          {
+            "id": "false",
+            "value": "false"
+          }
+        ]
+      }
+    ],
+    "segments": []
+  }
+}

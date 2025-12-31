@@ -1,33 +1,24 @@
 using System.Reflection;
 
-namespace FeatBit.McpServer.Tools;
+namespace FeatBit.McpServer.Infrastructure;
 
 /// <summary>
-/// Provides functionality for loading documentation files.
-/// This service handles loading documents from embedded resources or file system,
-/// and extracting metadata from markdown files.
+/// Default implementation of IDocumentLoader that loads documents from embedded resources or file system.
+/// This is the standard implementation for loading markdown documentation bundled with the application.
 /// </summary>
-public class DocumentLoader
+public class ResourcesDocumentLoader : IDocumentLoader
 {
-    /// <summary>
-    /// Describes a documentation file with metadata.
-    /// </summary>
-    public record DocumentOption(
-        string FileName,
-        string Description
-    );
-
     /// <summary>
     /// Loads available documents and extracts descriptions from markdown files.
     /// </summary>
-    public DocumentOption[] LoadAvailableDocuments(string[] documentFiles, string resourceSubPath)
+    public IDocumentLoader.DocumentOption[] LoadAvailableDocuments(string[] documentFiles, string resourceSubPath)
     {
-        var documents = new List<DocumentOption>();
+        var documents = new List<IDocumentLoader.DocumentOption>();
 
         foreach (var fileName in documentFiles)
         {
             var description = ExtractDescriptionFromMarkdown(fileName, resourceSubPath);
-            documents.Add(new DocumentOption(fileName, description));
+            documents.Add(new IDocumentLoader.DocumentOption(fileName, description));
         }
 
         return [.. documents];

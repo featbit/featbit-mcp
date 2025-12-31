@@ -1,14 +1,16 @@
-namespace FeatBit.McpServer.Tools.Sdks;
+using FeatBit.McpServer.Infrastructure;
 
-public class PythonSdks
+namespace FeatBit.McpServer.Domain.Sdks;
+
+public class JavaSdks
 {
-    private readonly DocumentLoader _documentLoader;
-    private const string ResourceSubPath = "Sdks.PythonSdks";
+    private readonly IDocumentLoader _documentLoader;
+    private const string ResourceSubPath = "Sdks.JavaSdks";
 
     /// <summary>
     /// Creates a new instance of JavaSdks with dependency injection.
     /// </summary>
-    public PythonSdks(DocumentLoader documentLoader)
+    public JavaSdks(IDocumentLoader documentLoader)
     {
         _documentLoader = documentLoader;
     }

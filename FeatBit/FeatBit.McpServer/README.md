@@ -12,6 +12,17 @@ We use Microsoft's MCP (Model Context Protocol) server framework to build a feat
 - Best practices for feature flag management
 - Troubleshooting common issues
 
+## Features
+
+### Bootstrap Mode Support
+
+The MCP server now supports **Bootstrap Mode** for offline operation or when the FeatBit server is unavailable. When enabled, the SDK will load feature flags from a local JSON file as a fallback.
+
+See [BOOTSTRAP.md](BOOTSTRAP.md) for detailed documentation on:
+- Configuring bootstrap mode
+- Creating bootstrap files
+- Use cases and troubleshooting
+
 ## Design Pattern
 
 1. Limit the number of tools that AI agents can use to interact with FeatBit.

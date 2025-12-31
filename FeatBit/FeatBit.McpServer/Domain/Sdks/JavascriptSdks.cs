@@ -1,14 +1,16 @@
-namespace FeatBit.McpServer.Tools.Sdks;
+using FeatBit.McpServer.Infrastructure;
+
+namespace FeatBit.McpServer.Domain.Sdks;
 
 public class JavascriptSdks
 {
-    private readonly DocumentLoader _documentLoader;
+    private readonly IDocumentLoader _documentLoader;
     private const string ResourceSubPath = "Sdks.JavascriptSdks";
 
     /// <summary>
     /// Creates a new instance of JavascriptSdks with dependency injection.
     /// </summary>
-    public JavascriptSdks(DocumentLoader documentLoader)
+    public JavascriptSdks(IDocumentLoader documentLoader)
     {
         _documentLoader = documentLoader;
     }
