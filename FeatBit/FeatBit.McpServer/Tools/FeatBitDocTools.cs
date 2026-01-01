@@ -13,8 +13,7 @@ namespace FeatBit.McpServer.Tools;
 /// </summary>
 [McpServerToolType]
 public class FeatBitDocTools(
-    DocService docService,
-    ILogger<FeatBitDocTools> logger)
+    DocService docService)
 {
     [McpServerTool]
     [Description("Search for relevant FeatBit documentation. Given a topic or question, this tool returns the most relevant documentation URL. The coding agent can then fetch the content from the URL to answer user questions.")]
