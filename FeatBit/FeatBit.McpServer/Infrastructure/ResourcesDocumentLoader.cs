@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 
 namespace FeatBit.McpServer.Infrastructure;
 
@@ -114,5 +115,90 @@ public class ResourcesDocumentLoader : IDocumentLoader
 
         // Final fallback
         return $"❌ SDK documentation '{fileName}' not found. Please ensure the resource file is properly embedded.";
+    }
+
+    /// <summary>
+    /// Discovers all available document filenames in the specified resource path.
+    /// </summary>
+    public string[] DiscoverDocuments(string resourceSubPath, string filePattern = "*")
+    {
+        var fileNames = new List<string>();
+        var extension = filePattern.StartsWith("*.") ? filePattern.Substring(1) : "";
+
+        // First, try to discover from embedded resources
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceNames = assembly.GetManifestResourceNames()
+            .Where(r => r.StartsWith($"FeatBit.McpServer.Resources.{resourceSubPath}.", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        // Filter by extension if specified
+        if (!string.IsNullOrEmpty(extension))
+        {
+            resourceNames = resourceNames.Where(r => r.EndsWith(extension, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        if (resourceNames.Count > 0)
+        {
+            // Extract filenames from resource names
+            foreach (var resourceName in resourceNames)
+            {
+                // Example: FeatBit.McpServer.Resources.Deployments.README.md -> README.md
+                var parts = resourceName.Split('.');
+                if (parts.Length >= 2)
+                {
+                    var fileName = string.Join(".", parts.Skip(parts.Length - 2));
+                    if (!string.IsNullOrEmpty(extension) && fileName.EndsWith(extension))
+                    {
+                        fileNames.Add(fileName);
+                    }
+                    else if (string.IsNullOrEmpty(extension))
+                    {
+                        fileNames.Add(fileName);
+                    }
+                }
+            }
+
+            return [.. fileNames];
+        }
+
+        // Fallback: discover from file system
+        var executablePath = AppContext.BaseDirectory;
+        var pathParts = resourceSubPath.Split('.');
+        var resourcePath = Path.Combine(executablePath, "Resources", Path.Combine(pathParts));
+        
+        if (Directory.Exists(resourcePath))
+        {
+            var searchPattern = string.IsNullOrEmpty(filePattern) || filePattern == "*" ? "*.*" : filePattern;
+            var files = Directory.GetFiles(resourcePath, searchPattern, SearchOption.TopDirectoryOnly);
+            fileNames.AddRange(files.Select(Path.GetFileName).Where(f => f != null).Cast<string>());
+        }
+
+        return [.. fileNames];
+    }
+
+    /// <summary>
+    /// Loads and deserializes a JSON configuration file from embedded resources or file system.
+    /// </summary>
+    public T? LoadJsonConfiguration<T>(string fileName, string resourceSubPath) where T : class
+    {
+        try
+        {
+            var content = LoadDocumentContent(fileName, resourceSubPath);
+            
+            // Check if content is an error message
+            if (content.StartsWith("❌"))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

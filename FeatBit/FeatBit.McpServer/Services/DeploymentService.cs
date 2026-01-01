@@ -1,166 +1,153 @@
+using System.Text.Json;
+using FeatBit.McpServer.Domain.Deployments;
 using FeatBit.McpServer.Infrastructure;
-using FeatBit.McpServer.Tools.Deployments;
 using Microsoft.Extensions.AI;
 
 namespace FeatBit.McpServer.Services;
 
-/// <summary>
-/// Service for handling FeatBit deployment documentation routing and selection.
-/// This service uses AI to intelligently select the most appropriate deployment documentation
-/// based on user's deployment method, target platform, and specific topic.
-/// </summary>
 public class DeploymentService
 {
+    private record DocumentSelection(string[] Names);
     private readonly IDocumentLoader _documentLoader;
+    private readonly IClaudeSkillsMarkdownParser _markdownParser;
     private readonly IChatClient _chatClient;
     private readonly ILogger<DeploymentService> _logger;
     private const string ResourceSubPath = "Deployments";
 
-    /// <summary>
-    /// Available deployment documentation files with their metadata
-    /// </summary>
-    private record DeploymentDocument(
-        string FileName,
-        string Method,
-        string[] Platforms,
-        string Description
-    );
+    private List<DeploymentDocumentMetadata>? _availableDocuments;
 
     public DeploymentService(
         IDocumentLoader documentLoader,
+        IClaudeSkillsMarkdownParser markdownParser,
         IChatClient chatClient,
         ILogger<DeploymentService> logger)
     {
         _documentLoader = documentLoader;
+        _markdownParser = markdownParser;
         _chatClient = chatClient;
         _logger = logger;
     }
 
     /// <summary>
-    /// Available deployment documents with their metadata
+    /// Lazily loads and caches all available deployment documents with their metadata.
     /// </summary>
-    private DeploymentDocument[]? _availableDocuments;
-    
-    private DeploymentDocument[] AvailableDocuments
+    private List<DeploymentDocumentMetadata> AvailableDocuments
     {
         get
         {
             if (_availableDocuments == null)
             {
-                _availableDocuments = new[]
-                {
-                    new DeploymentDocument(
-                        FileName: "AspireAzureDeployment.md",
-                        Method: "aspire",
-                        Platforms: new[] { "azure" },
-                        Description: "Deploy FeatBit to Azure using .NET Aspire with Azure Container Apps, including infrastructure provisioning"
-                    ),
-                    new DeploymentDocument(
-                        FileName: "HelmDeployment.md",
-                        Method: "helm-charts",
-                        Platforms: new[] { "kubernetes", "azure", "aws", "gcp", "on-premises" },
-                        Description: "Deploy FeatBit on Kubernetes clusters using Helm charts for orchestration"
-                    ),
-                    new DeploymentDocument(
-                        FileName: "TerraformAzureDeployment.md",
-                        Method: "terraform",
-                        Platforms: new[] { "azure" },
-                        Description: "Infrastructure as Code deployment to Azure using Terraform"
-                    ),
-                    new DeploymentDocument(
-                        FileName: "DockerComposeDeployment.md",
-                        Method: "docker-compose",
-                        Platforms: new[] { "docker-compose", "on-premises" },
-                        Description: "Local or on-premises deployment using Docker Compose"
-                    ),
-                    new DeploymentDocument(
-                        FileName: "README.md",
-                        Method: "all",
-                        Platforms: new[] { "all" },
-                        Description: "Overview of all deployment methods and general deployment guidance"
-                    )
-                };
+                _availableDocuments = LoadAvailableDocuments();
             }
             return _availableDocuments;
         }
     }
 
-    /// <summary>
-    /// Gets deployment documentation based on method, platform, and topic.
-    /// Uses AI to select the most appropriate documentation when available.
-    /// </summary>
-    /// <param name="method">Deployment method (helm-charts, terraform, docker-compose, aspire, others)</param>
-    /// <param name="platform">Target platform (azure, aws, gcp, on-premises, kubernetes, docker-compose, all)</param>
-    /// <param name="topic">Specific topic the user wants to learn about</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Deployment documentation content</returns>
+    private List<DeploymentDocumentMetadata> LoadAvailableDocuments()
+    {
+        return _documentLoader.DiscoverDocuments(ResourceSubPath, "*.md")
+            .Select(fileName =>
+            {
+                try
+                {
+                    var content = _documentLoader.LoadDocumentContent(fileName, ResourceSubPath);
+                    var parsed = _markdownParser.ParseDocument(fileName, content);
+                    return new DeploymentDocumentMetadata
+                    {
+                        FileName = parsed.FileName,
+                        Name = parsed.Name,
+                        Description = parsed.Description,
+                        Content = parsed.Content
+                    };
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load document: {FileName}", fileName);
+                    return null;
+                }
+            })
+            .Where(doc => doc != null)
+            .ToList()!;
+    }
+
     public async Task<string> GetDeploymentDocumentationAsync(
         string method,
         string platform,
         string topic,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation(
-            "Getting deployment documentation for method={Method}, platform={Platform}, topic={Topic}",
-            method, platform, topic);
-
-        // First, try to select document using AI
-        var selectedFileName = await SelectDocumentWithAIAsync(method, platform, topic, cancellationToken);
-        
-        // Load and return the selected document
-        var content = _documentLoader.LoadDocumentContent(selectedFileName, ResourceSubPath);
-        
-        _logger.LogInformation("Successfully loaded deployment document: {FileName}", selectedFileName);
-        return content;
+        var selectedDocuments = await SelectDocumentsWithAIAsync(method, platform, topic, cancellationToken);
+        if (selectedDocuments.Count == 0)
+        {
+            _logger.LogWarning("No documents selected, returning empty content");
+            return "";
+        }
+        return string.Join("\n\n", selectedDocuments.Select(doc => doc.Content));
     }
 
-    /// <summary>
-    /// Uses AI to intelligently select the most appropriate deployment document
-    /// based on method, platform, and user's specific topic.
-    /// </summary>
-    private async Task<string> SelectDocumentWithAIAsync(
+    private async Task<List<DeploymentDocumentMetadata>> SelectDocumentsWithAIAsync(
         string method,
         string platform,
         string topic,
         CancellationToken cancellationToken)
     {
-        // Build document list for AI prompt
-        var documentList = string.Join("\n", AvailableDocuments.Select((doc, index) =>
-            $"{index + 1}. {doc.FileName}\n" +
-            $"   Method: {doc.Method}\n" +
-            $"   Platforms: {string.Join(", ", doc.Platforms)}\n" +
-            $"   Description: {doc.Description}"));
+        if (AvailableDocuments.Count == 0)
+        {
+            _logger.LogWarning("No deployment documents available");
+            return new List<DeploymentDocumentMetadata>();
+        }
 
-        var systemPrompt = $$"""
-            You are an expert DevOps engineer helping to select the most appropriate FeatBit deployment documentation.
+        // Build document list as JSON for better AI comprehension
+        var documentListJson = JsonSerializer.Serialize(
+            AvailableDocuments.Select(doc => new
+            {
+                name = doc.Name,
+                description = doc.Description
+            }),
+            new JsonSerializerOptions { WriteIndented = true });
+
+        var systemPrompt = """
+            You are an expert DevOps engineer. Your task is to select the most relevant FeatBit deployment documentation based on the user's deployment method, target platform, and specific question.
             
-            Available deployment documentation files:
-            {{documentList}}
+            SELECTION GUIDELINES:
             
-            Based on the user's deployment method, target platform, and specific topic, respond with ONLY the filename 
-            (e.g., "AspireAzureDeployment.md" or "HelmDeployment.md").
-            Do not include any explanation or additional text - just the filename.
+            1. **Prioritize Exact Matches**: Choose documents whose descriptions closely match the user's requirements.
             
-            Selection Guidelines:
-            - Match the deployment method first (aspire, helm-charts, terraform, docker-compose)
-            - Consider the target platform (azure, aws, gcp, kubernetes, on-premises)
-            - Consider the user's specific topic or question
-            - If multiple documents match, choose the most specific one
-            - If uncertain or if method/platform is "all" or "others", choose README.md for overview
+            2. **Return Multiple Documents** when:
+               - They provide complementary information for the user's needs
+               - The user's query is broad and covers multiple deployment approaches
+               - The topic spans across different deployment methods
             
-            Priority Rules:
-            1. Exact method + platform match (highest priority)
-            2. Method match with platform compatibility
-            3. Platform-specific documentation
-            4. General overview (README.md) as fallback
+            3. **Return a Single Document** when:
+               - There is a clear and specific match
+               - The user's query focuses on one particular deployment method or platform
+            
+            IMPORTANT:
+            - Use exact `name` from the available documents list
+            - Return at most 2 documents unless absolutely necessary
+            - Prefer specific, targeted documentation over broad overviews
+            
+            RESPONSE FORMAT:
+            Return a JSON object with a single property "Names" containing an array of selected document names, like this:
+            ```json
+            {
+              "Names": ["document-name-001", "document-name-002"]
+            }
+            ```
             """;
 
-        var userMessage = $"""
-            Deployment Method: {method}
-            Target Platform: {platform}
-            User's Topic/Question: {topic}
+        var userMessage = $$"""
+            Available deployment documentation files:
+            ```json
+            {{documentListJson}}
+            ```
             
-            Select the best deployment documentation file.
+            User Request:
+            - Deployment Method: {{method}}
+            - Target Platform: {{platform}}
+            - Topic/Question: {{topic}}
+            
+            Select the best deployment documentation file(s) from the available files above.
             """;
 
         var messages = new List<ChatMessage>
@@ -171,80 +158,46 @@ public class DeploymentService
 
         var options = new ChatOptions
         {
-            MaxOutputTokens = 50,
-            Temperature = 0.3f // Lower temperature for more deterministic results
+            ResponseFormat = ChatResponseFormat.Json
         };
 
-        var response = await _chatClient.GetResponseAsync(messages, options, cancellationToken);
-        var selectedFile = response.ToString()?.Trim() ?? "";
-
-        _logger.LogInformation("AI selected deployment document: {FileName}", selectedFile);
-
-        // Validate the selection
-        if (AvailableDocuments.Any(d => d.FileName.Equals(selectedFile, StringComparison.OrdinalIgnoreCase)))
+        var selectedDocuments = new List<DeploymentDocumentMetadata>();
+        const int maxRetries = 3;
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            return selectedFile;
+            try
+            {
+                var response = await _chatClient.GetResponseAsync<DocumentSelection>(messages, options, cancellationToken: cancellationToken);
+                var selectedNames = response.Result?.Names ?? Array.Empty<string>();
+
+                selectedDocuments = selectedNames
+                    .Select(name =>
+                    {
+                        var doc = AvailableDocuments.FirstOrDefault(d =>
+                            d.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                        if (doc == null)
+                            _logger.LogWarning("AI selected invalid document name: {Name}", name);
+                        return doc;
+                    })
+                    .Where(doc => doc != null)
+                    .ToList()!;
+
+                if (selectedDocuments.Count > 0)
+                {
+                    _logger.LogInformation("Successfully selected {Count} documents on attempt {Attempt}",
+                        selectedDocuments.Count, attempt);
+                    return selectedDocuments;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error during AI document selection on attempt {Attempt}/{MaxRetries}",
+                    attempt, maxRetries);
+                await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt), cancellationToken);
+            }
         }
 
-        // If AI returns invalid filename, fall back to rule-based
-        _logger.LogWarning("AI returned invalid filename: {FileName}, using rule-based fallback", selectedFile);
-        return SelectDocumentByRules(method, platform);
-    }
-
-    /// <summary>
-    /// Rule-based fallback for document selection when AI is not available or fails.
-    /// </summary>
-    private string SelectDocumentByRules(string method, string platform)
-    {
-        var normalizedMethod = method.ToLowerInvariant();
-        var normalizedPlatform = platform.ToLowerInvariant();
-
-        // Try exact match first
-        var exactMatch = AvailableDocuments.FirstOrDefault(d =>
-            d.Method.Equals(normalizedMethod, StringComparison.OrdinalIgnoreCase) &&
-            d.Platforms.Any(p => p.Equals(normalizedPlatform, StringComparison.OrdinalIgnoreCase)));
-
-        if (exactMatch != null)
-        {
-            return exactMatch.FileName;
-        }
-
-        // Try method match with platform compatibility
-        var methodMatch = AvailableDocuments.FirstOrDefault(d =>
-            d.Method.Equals(normalizedMethod, StringComparison.OrdinalIgnoreCase) ||
-            d.Platforms.Contains(normalizedMethod));
-
-        if (methodMatch != null)
-        {
-            return methodMatch.FileName;
-        }
-
-        // Platform-only match
-        var platformMatch = AvailableDocuments.FirstOrDefault(d =>
-            d.Platforms.Any(p => p.Equals(normalizedPlatform, StringComparison.OrdinalIgnoreCase)));
-
-        if (platformMatch != null)
-        {
-            return platformMatch.FileName;
-        }
-
-        // Default fallback to README
-        _logger.LogInformation("No specific match found, returning README.md");
-        return "README.md";
-    }
-
-    /// <summary>
-    /// Gets a list of available deployment methods with their descriptions.
-    /// Useful for helping users understand their deployment options.
-    /// </summary>
-    public IEnumerable<object> GetAvailableDeploymentMethods()
-    {
-        return AvailableDocuments.Select(d => new
-        {
-            d.FileName,
-            d.Method,
-            Platforms = string.Join(", ", d.Platforms),
-            d.Description
-        });
+        _logger.LogError("All retry attempts failed to select valid documents, returning empty list");
+        return selectedDocuments;
     }
 }

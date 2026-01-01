@@ -41,4 +41,21 @@ public interface IDocumentLoader
     /// <param name="resourceSubPath">Resource sub-path or category identifier</param>
     /// <returns>The document content as string</returns>
     string LoadDocumentContent(string fileName, string resourceSubPath);
+
+    /// <summary>
+    /// Discovers all available document filenames in the specified resource path.
+    /// </summary>
+    /// <param name="resourceSubPath">Resource sub-path or category identifier</param>
+    /// <param name="filePattern">File pattern to match (e.g., "*.md"). Defaults to all files.</param>
+    /// <returns>Array of discovered document filenames</returns>
+    string[] DiscoverDocuments(string resourceSubPath, string filePattern = "*");
+
+    /// <summary>
+    /// Loads and deserializes a JSON configuration file from the specified resource path.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the JSON content into</typeparam>
+    /// <param name="fileName">The JSON file name</param>
+    /// <param name="resourceSubPath">Resource sub-path or category identifier</param>
+    /// <returns>Deserialized object of type T, or null if file not found or deserialization fails</returns>
+    T? LoadJsonConfiguration<T>(string fileName, string resourceSubPath) where T : class;
 }

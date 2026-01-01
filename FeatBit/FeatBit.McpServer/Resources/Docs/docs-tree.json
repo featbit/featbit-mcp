@@ -1,0 +1,592 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-01",
+  "description": "Complete documentation tree for FeatBit with summaries of all markdown files",
+  "baseUrl": "https://docs.featbit.co",
+  "sections": [
+    {
+      "title": "Getting Started",
+      "path": "/getting-started",
+      "summary": "Comprehensive onboarding guide covering initial setup, SDK integration, and core feature flag concepts through interactive tutorials. Includes step-by-step instructions for creating boolean and multi-variant flags, connecting SDKs, and practical how-to guides for common use cases including testing in production, remote configuration, beta testing, entitlement management, and A/B testing.",
+      "files": [
+        {
+          "path": "pages/getting-started/connect-an-sdk.mdx",
+          "url": "/getting-started/connect-an-sdk",
+          "fullUrl": "https://docs.featbit.co/getting-started/connect-an-sdk",
+          "summary": "Explains how to integrate FeatBit SDK into applications using the portal's Getting Started page. Shows the automatically generated code containing SDK installation, initialization, user identification, flag evaluation, and update listeners."
+        },
+        {
+          "path": "pages/getting-started/create-two-feature-flags.mdx",
+          "url": "/getting-started/create-two-feature-flags",
+          "fullUrl": "https://docs.featbit.co/getting-started/create-two-feature-flags",
+          "summary": "Step-by-step guide for creating a boolean feature flag named 'game runner' through the onboarding flow. Covers organization/project initialization, flag creation, SDK connection with starter code, and connection verification."
+        },
+        {
+          "path": "pages/getting-started/create-a-multi-variant-feature-flag.mdx",
+          "url": "/getting-started/create-a-multi-variant-feature-flag",
+          "fullUrl": "https://docs.featbit.co/getting-started/create-a-multi-variant-feature-flag",
+          "summary": "Tutorial for creating a multi-variant string feature flag named 'difficulty mode' with three variations (easy, normal, hard). Demonstrates how to interact with the Dino Game demo and observe real-time flag changes."
+        },
+        {
+          "path": "pages/getting-started/try-interacting-with-the-demo.mdx",
+          "url": "/getting-started/try-interacting-with-the-demo",
+          "fullUrl": "https://docs.featbit.co/getting-started/try-interacting-with-the-demo",
+          "summary": "Interactive tutorial for the Dino Game demo showing how to toggle the 'game-runner' feature flag to reveal/hide the game. Demonstrates the connection between feature flag state (ON/OFF) and application behavior."
+        }
+      ],
+      "subsections": [
+        {
+          "title": "How-To Guides",
+          "path": "/getting-started/how-to-guides",
+          "summary": "Practical guides for common feature flag use cases including testing in production with targeted rollouts, remote configuration for dynamic application settings, beta testing with qualitative feedback collection, entitlement management for subscription-based features, and A/B testing for data-driven decision making. Each guide provides step-by-step instructions with real-world examples.",
+          "files": [
+            {
+              "path": "pages/getting-started/how-to-guides/testing-in-production.md",
+              "url": "/getting-started/how-to-guides/testing-in-production",
+              "fullUrl": "https://docs.featbit.co/getting-started/how-to-guides/testing-in-production",
+              "summary": "Guide for safely testing in production using feature flags with targeted rollouts. Demonstrates individual user targeting by adding specific users to the allowlist and explains three methods of importing/adding users to FeatBit."
+            },
+            {
+              "path": "pages/getting-started/how-to-guides/remote-config.md",
+              "url": "/getting-started/how-to-guides/remote-config",
+              "fullUrl": "https://docs.featbit.co/getting-started/how-to-guides/remote-config",
+              "summary": "Describes remote configuration as a cloud-based key-value store that alters applications in real-time without deployments. Unlike binary feature flags, remote config manages non-boolean settings like strings, numbers, or JSON. FeatBit allows converting feature flags to remote config by turning them on and changing the variation data type."
+            },
+            {
+              "path": "pages/getting-started/how-to-guides/beta-testing-qualitative-feedback.md",
+              "url": "/getting-started/how-to-guides/beta-testing-qualitative-feedback",
+              "fullUrl": "https://docs.featbit.co/getting-started/how-to-guides/beta-testing-qualitative-feedback",
+              "summary": "Covers beta testing with real users in production environments to gather customer feedback before full release. FeatBit simplifies beta testing by allowing product managers to control who receives beta features through segments and targeting rules. The guide provides a Dino Game example showing how to release features to internal users and external users under 20 years old."
+            },
+            {
+              "path": "pages/getting-started/how-to-guides/entitlement.md",
+              "url": "/getting-started/how-to-guides/entitlement",
+              "fullUrl": "https://docs.featbit.co/getting-started/how-to-guides/entitlement",
+              "summary": "Explains entitlement management for enabling/disabling software features for customers using feature flags and segments. Users can create subscription segments (like 'Basic Subscription') and add them to feature flag targeting rules to control feature access. The guide covers how sales teams can grant feature access and how PMs can manage beta user access to new feature versions."
+            },
+            {
+              "path": "pages/getting-started/how-to-guides/ab-testing.md",
+              "url": "/getting-started/how-to-guides/ab-testing",
+              "fullUrl": "https://docs.featbit.co/getting-started/how-to-guides/ab-testing",
+              "summary": "Introduces A/B testing capabilities for both front-end and server-side experiments integrated with the development process. The guide demonstrates creating control and experimental groups with equal sample sizes, defining conversion metrics, and analyzing results for statistical significance. Uses the Dino Game demo as an example to test which onboarding process leads to better completion rates."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Feature Flags",
+      "path": "/feature-flags",
+      "summary": "Complete reference for feature flag management including flag creation, variations, user targeting, and organizational workflows. Covers advanced topics such as targeting rules, percentage rollouts, individual user targeting, user segments (standard, shareable, and global), flag insights and analytics, audit logging, scheduled changes, flag triggers, and flag lifecycle management (archiving, copying, deleting). Includes guidance on organizing flags through projects and environments.",
+      "files": [
+        {
+          "path": "pages/feature-flags/audit-log.mdx",
+          "url": "/feature-flags/audit-log",
+          "fullUrl": "https://docs.featbit.co/feature-flags/audit-log",
+          "summary": "Explains the audit log feature for tracking all changes made to feature flags in a given environment. Shows how to filter entries by date and other criteria, displaying the most recent changes first."
+        },
+        {
+          "path": "pages/feature-flags/create-flag-variations.mdx",
+          "url": "/feature-flags/create-flag-variations",
+          "fullUrl": "https://docs.featbit.co/feature-flags/create-flag-variations",
+          "summary": "Details how to create and edit feature flag variations for boolean and multivariate flags. Explains default flag values, changing ON/OFF variations, and using multivariate flags with percentage rollouts for complex use cases like A/B/n testing."
+        },
+        {
+          "path": "pages/feature-flags/feature-workflow.mdx",
+          "url": "/feature-flags/feature-workflow",
+          "fullUrl": "https://docs.featbit.co/feature-flags/feature-workflow",
+          "summary": "Introduction to feature workflows in FeatBit for complex flag management. Lists available workflow features including flag triggers and scheduled flag changes that map to team build/ship/control processes."
+        },
+        {
+          "path": "pages/feature-flags/targeting-users-with-flags.mdx",
+          "url": "/feature-flags/targeting-users-with-flags",
+          "fullUrl": "https://docs.featbit.co/feature-flags/targeting-users-with-flags",
+          "summary": "Overview of the Targeting tab for controlling which users receive specific flag variations. Useful for internal testing, private betas, and usability tests before broader rollouts. References detailed articles on targeting rules, percentage rollouts, and individual targeting."
+        },
+        {
+          "path": "pages/feature-flags/the-flag-insights.mdx",
+          "url": "/feature-flags/the-flag-insights",
+          "fullUrl": "https://docs.featbit.co/feature-flags/the-flag-insights",
+          "summary": "Explains the flag evaluations graph on the Insights tab for observing flag performance over time. Shows how to view evaluation counts per variation (not per user) and the end-user flag variation table showing which variation each user received."
+        },
+        {
+          "path": "pages/feature-flags/users-and-user-segments.mdx",
+          "url": "/feature-flags/users-and-user-segments",
+          "fullUrl": "https://docs.featbit.co/feature-flags/users-and-user-segments",
+          "summary": "Introduction to users and user segments in FeatBit. Explains that users are identifiable resources that encounter feature flags, and how they can be managed through targeting, attributes, and segments."
+        }
+      ],
+      "subsections": [
+        {
+          "title": "Feature Workflow",
+          "path": "/feature-flags/feature-workflow",
+          "summary": "Advanced workflow features for automated flag management including flag triggers for remote control via webhooks from APM and monitoring systems, and scheduled flag changes for time-based progressive delivery strategies. Enables integration with operational tools and planned feature releases.",
+          "files": [
+            {
+              "path": "pages/feature-flags/feature-workflow/flag-triggers.md",
+              "url": "/feature-flags/feature-workflow/flag-triggers",
+              "fullUrl": "https://docs.featbit.co/feature-flags/feature-workflow/flag-triggers",
+              "summary": "Describes flag triggers that allow remote flag targeting changes via unique webhook URLs from third-party tools like APM systems. Triggers use unguessable URLs for security and can turn flags on or off based on operational alerts or thresholds. Users can create, disable, reset, or delete triggers, and invoke them via POST requests."
+            },
+            {
+              "path": "pages/feature-flags/feature-workflow/scheduled-flag-changes.md",
+              "url": "/feature-flags/feature-workflow/scheduled-flag-changes",
+              "fullUrl": "https://docs.featbit.co/feature-flags/feature-workflow/scheduled-flag-changes",
+              "summary": "Explains how to schedule feature flag changes to take effect at a future date and time, enabling progressive delivery strategies. Users can create multiple scheduled changes for a single flag, view all pending scheduled changes, and delete them if needed. Benefits include timing early launches, progressive rollouts, temporary access management, and flag hygiene."
+            }
+          ]
+        },
+        {
+          "title": "Targeting Users with Flags",
+          "path": "/feature-flags/targeting-users-with-flags",
+          "summary": "Comprehensive guide to user targeting mechanisms including rule-based targeting with user attributes and operators, percentage rollouts for gradual feature releases with consistent user assignment, and individual user targeting for precise control over specific users. Covers best practices for safe progressive delivery and A/B testing scenarios.",
+          "files": [
+            {
+              "path": "pages/feature-flags/targeting-users-with-flags/targeting-rules.mdx",
+              "url": "/feature-flags/targeting-users-with-flags/targeting-rules",
+              "fullUrl": "https://docs.featbit.co/feature-flags/targeting-users-with-flags/targeting-rules",
+              "summary": "Targeting rules allow you to serve different feature flag variations to segments of users based on built-in and custom user attributes. Each rule consists of conditions with user attributes, operators, and values, and can include percentage rollouts to serve variations to a portion of matching users. Rules support multiple conditions that must all be met, and offer a default rule for users who don't match any targeting criteria."
+            },
+            {
+              "path": "pages/feature-flags/targeting-users-with-flags/percentage-rollouts.mdx",
+              "url": "/feature-flags/targeting-users-with-flags/percentage-rollouts",
+              "fullUrl": "https://docs.featbit.co/feature-flags/targeting-users-with-flags/percentage-rollouts",
+              "summary": "Percentage rollouts enable gradual feature releases by serving new features to a specified percentage of users, allowing you to manage deployment risk incrementally. Users are assigned to variations based on a hash of their user key, ensuring consistent variation assignment as percentages change over time. Advanced rollouts support targeting based on any user attribute, ensuring users with matching attribute values receive the same variation."
+            },
+            {
+              "path": "pages/feature-flags/targeting-users-with-flags/individual-user-targeting.mdx",
+              "url": "/feature-flags/targeting-users-with-flags/individual-user-targeting",
+              "fullUrl": "https://docs.featbit.co/feature-flags/targeting-users-with-flags/individual-user-targeting",
+              "summary": "Individual user targeting allows you to assign specific users to particular flag variations using the Targeting tab. You can search for existing users by name or key, or manually enter keys for unknown users, though this feature is recommended only for small numbers of users (under 100 per variation) to avoid performance issues. Users can be easily removed from targeting lists by clicking the X next to their name."
+            }
+          ]
+        },
+        {
+          "title": "Users and User Segments",
+          "path": "/feature-flags/users-and-user-segments",
+          "summary": "Complete reference for user management and segmentation including environment-specific segments with include/exclude rules, user attributes (built-in and custom) for targeting, the auto-populated users list with filtering capabilities, shareable segments for cross-environment/project consistency, and global users for workspace-wide user definitions. Essential for organizing and targeting user groups effectively.",
+          "files": [
+            {
+              "path": "pages/feature-flags/users-and-user-segments/user-segments.md",
+              "url": "/feature-flags/users-and-user-segments/user-segments",
+              "fullUrl": "https://docs.featbit.co/feature-flags/users-and-user-segments/user-segments",
+              "summary": "Covers user segments which are lists of users used to manage flag targeting behavior in bulk. Segments are environment-specific and can include/exclude users individually or by attributes using custom targeting rules. Users can create, customize, view, and delete segments, with rules parsed top-to-bottom for matching."
+            },
+            {
+              "path": "pages/feature-flags/users-and-user-segments/user-attributes.md",
+              "url": "/feature-flags/users-and-user-segments/user-attributes",
+              "fullUrl": "https://docs.featbit.co/feature-flags/users-and-user-segments/user-attributes",
+              "summary": "Explains user attributes (built-in and custom) that define user objects identified by unique keys. These attributes are used in flag targeting rules to determine which variation users receive. The user pages display attribute lists, feature flags lists, and segment lists for each user."
+            },
+            {
+              "path": "pages/feature-flags/users-and-user-segments/the-user-list.md",
+              "url": "/feature-flags/users-and-user-segments/the-user-list",
+              "fullUrl": "https://docs.featbit.co/feature-flags/users-and-user-segments/the-user-list",
+              "summary": "Describes the Users list which automatically populates when users encounter feature flags and provides a summary of each user's feature experience. Users can filter the list by standard or custom attributes and customize which attributes are displayed. The SDK evaluates flags based on provided user objects, not attributes from the Users list."
+            },
+            {
+              "path": "pages/feature-flags/users-and-user-segments/shareable-segments.md",
+              "url": "/feature-flags/users-and-user-segments/shareable-segments",
+              "fullUrl": "https://docs.featbit.co/feature-flags/users-and-user-segments/shareable-segments",
+              "summary": "Introduces shareable segments that can be reused across different environments, projects, or organizations for consistent user group targeting. Segments can have environment, project, or organization scopes defined during creation. Shared segments can only reference global users, not environment-specific users."
+            },
+            {
+              "path": "pages/feature-flags/users-and-user-segments/global-users.md",
+              "url": "/feature-flags/users-and-user-segments/global-users",
+              "fullUrl": "https://docs.featbit.co/feature-flags/users-and-user-segments/global-users",
+              "summary": "Explains global users that can be used across the entire workspace in feature flags, segments, and shared segments. Users can import global users via JSON files and add them to targeting rules. This prevents redundant configuration work across multiple projects and environments, useful for teams like QA that test across multiple projects."
+            }
+          ]
+        },
+        {
+          "title": "Organizing Flags",
+          "path": "/feature-flags/organizing-flags",
+          "summary": "Documentation for organizing and managing feature flags at scale including project structures for business objectives, environment management for development lifecycle (Dev/QA/Staging/Prod), flag list operations with search and filtering, copying flags between environments with validation, and archiving/deleting flags safely. Provides best practices for maintaining clean flag inventories.",
+          "files": [
+            {
+              "path": "pages/feature-flags/organizing-flags/projects.mdx",
+              "url": "/feature-flags/organizing-flags/projects",
+              "fullUrl": "https://docs.featbit.co/feature-flags/organizing-flags/projects",
+              "summary": "Describes projects in FeatBit as organizational units for managing different business objectives. Each project has unique environments and feature flags. Includes instructions for creating and deleting projects with warnings about permanent deletion."
+            },
+            {
+              "path": "pages/feature-flags/organizing-flags/environments.md",
+              "url": "/feature-flags/organizing-flags/environments",
+              "fullUrl": "https://docs.featbit.co/feature-flags/organizing-flags/environments",
+              "summary": "Explains environments as organizational units within projects for managing flags throughout the development lifecycle (Dev, Prod, QA, Staging). Shows how to switch environments, manage them, and migrate content between environments."
+            },
+            {
+              "path": "pages/feature-flags/organizing-flags/the-flags-list.mdx",
+              "url": "/feature-flags/organizing-flags/the-flags-list",
+              "fullUrl": "https://docs.featbit.co/feature-flags/organizing-flags/the-flags-list",
+              "summary": "Details the feature flags list page showing all flags within an environment. Covers flag creation, searching by name/key/tag/status, viewing archived flags, and copying flags between environments with step-by-step instructions."
+            },
+            {
+              "path": "pages/feature-flags/organizing-flags/copy-flags.mdx",
+              "url": "/feature-flags/organizing-flags/copy-flags",
+              "fullUrl": "https://docs.featbit.co/feature-flags/organizing-flags/copy-flags",
+              "summary": "This feature enables copying feature flags and their settings from one environment to another within the same project. The copy process includes flag configurations and targeting settings, but has restrictions: it won't copy flags with duplicate keys, individual targeting users, or targeting rules containing non-shareable segments or segments not scoped to the target environment. Warning messages appear when attempting to copy flags with these restrictions."
+            },
+            {
+              "path": "pages/feature-flags/organizing-flags/archiving-and-deleting.mdx",
+              "url": "/feature-flags/organizing-flags/archiving-and-deleting",
+              "fullUrl": "https://docs.featbit.co/feature-flags/organizing-flags/archiving-and-deleting",
+              "summary": "Archiving flags allows you to retire flags that are serving only one variation and haven't been requested in seven days, without permanently deleting them. Archived flags can be viewed separately, restored if needed, or permanently deleted, though deletion is irreversible and should only be done after removing all code references to avoid users receiving fallback values. The process helps maintain a clean flags list while preserving historical configurations for reference."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Experimentation",
+      "path": "/experimentation",
+      "summary": "Documentation for FeatBit's experimentation and A/B testing capabilities, explaining how to measure feature flag impact through tracked metrics. Covers experiment design principles, metric types (click conversion, custom conversion, page view, numeric), statistical analysis using frequentist approach with confidence intervals, and best practices for creating, running, analyzing, and concluding experiments.",
+      "files": [
+        {
+          "path": "pages/experimentation/understanding-experimentation.md",
+          "url": "/experimentation/understanding-experimentation",
+          "fullUrl": "https://docs.featbit.co/experimentation/understanding-experimentation",
+          "summary": "Comprehensive overview of FeatBit's Experimentation feature for measuring flag impact on users through tracked metrics. Explains A/B/n testing, credible intervals, experiment controls, and best practices for defining hypotheses and success metrics."
+        },
+        {
+          "path": "pages/experimentation/creating-experiments.md",
+          "url": "/experimentation/creating-experiments",
+          "fullUrl": "https://docs.featbit.co/experimentation/creating-experiments",
+          "summary": "Guide for setting up experiments by creating metrics and connecting them to flags. Covers primary/secondary metrics, metric types (click conversion, custom conversion, page view, custom numeric), and step-by-step metric creation process."
+        },
+        {
+          "path": "pages/experimentation/analyzing-experiments.md",
+          "url": "/experimentation/analyzing-experiments",
+          "fullUrl": "https://docs.featbit.co/experimentation/analyzing-experiments",
+          "summary": "Explains how to read experiment results using frequentist approach with confidence intervals (95%) and p-values. Details stopping/editing experiments, viewing data over time periods, and choosing winning variations based on statistical significance."
+        }
+      ]
+    },
+    {
+      "title": "Relay Proxy",
+      "path": "/relay-proxy",
+      "summary": "Complete documentation for FeatBit Agent - a fast and lightweight relay proxy application running within your infrastructure, acting as a read replica between SDKs and the Evaluation Server (ELS). The agent handles all SDK connections, delivers real-time updates, and supports multiple environments across different projects. Features two operation modes: Auto mode with WebSocket-based real-time synchronization for automatic data updates from ELS, and Manual mode with complete lifecycle control for air-gapped environments without internet connectivity. Includes deployment options via Docker, systemd, or native binaries for Windows/Linux/macOS, comprehensive health check endpoints (liveness/readiness), REST API for manual operations (status, bootstrap, backup), event forwarding capabilities, and troubleshooting guides. Key use cases include improving performance/reliability by reducing latency, operating in air-gapped environments, reducing outbound connections, and maintaining high availability during FeatBit platform outages.",
+      "files": [
+        {
+          "path": "pages/relay-proxy/overview.mdx",
+          "url": "/relay-proxy/overview",
+          "fullUrl": "https://docs.featbit.co/relay-proxy/overview",
+          "summary": "Describes the Relay Proxy management portal for FeatBit Agents. Explains two agent types: Auto agents (zero-configuration with WebSocket real-time sync) and Manual agents (complete lifecycle control with manual sync operations)."
+        },
+        {
+          "path": "https://github.com/featbit/featbit-agent",
+          "url": "https://github.com/featbit/featbit-agent",
+          "fullUrl": "https://github.com/featbit/featbit-agent",
+          "summary": "Official FeatBit Agent GitHub repository. Contains complete source code, documentation for installation and configuration (Docker/systemd/native), API reference for manual mode operations (status/bootstrap/backup endpoints), health check setup (liveness/readiness), troubleshooting guides for connection and deployment issues, development guidelines, and multi-platform build instructions. Supports both auto mode (automatic WebSocket synchronization) and manual mode (for air-gapped environments). Includes examples for connecting SDKs to the agent, Docker deployment configurations, and comprehensive guides for running as a service on Linux systems. Version compatibility: Agent v2 requires FeatBit v5.1.0 or later; Agent v1 for older versions."
+        }
+      ]
+    },
+    {
+      "title": "API Documentation",
+      "path": "/api-docs",
+      "summary": "Complete REST API reference for programmatic feature flag management covering authentication (personal and service tokens), request/response formats, error handling, and CORS support. Includes comprehensive guides for getting started with the API, understanding FeatBit's data hierarchy (organization/project/environment/flags), making requests with curl or Postman, and Flag Evaluation API for both client-side and server-side scenarios. Details the Evaluation Server APIs for retrieving feature flags with different approaches for client-side (single user, server-evaluated) and server-side (multiple users, locally-evaluated) SDKs. Covers common use cases for automated flag management and integration with CI/CD pipelines.",
+      "files": [
+        {
+          "path": "pages/api-docs/overview.mdx",
+          "url": "/api-docs/overview",
+          "fullUrl": "https://docs.featbit.co/api-docs/overview",
+          "summary": "General introduction to FeatBit REST API covering authentication with personal/service tokens via Authorization header, JSON request/response format, error handling format, and CORS support for AJAX requests from any origin."
+        },
+        {
+          "path": "pages/api-docs/using-featbit-rest-api.mdx",
+          "url": "/api-docs/using-featbit-rest-api",
+          "fullUrl": "https://docs.featbit.co/api-docs/using-featbit-rest-api",
+          "summary": "Comprehensive guide for getting started with FeatBit REST API including authentication via access tokens, making requests with curl/Postman, understanding FeatBit's data hierarchy (organization/project/environment/flags), and common use cases for programmatic flag management."
+        },
+        {
+          "path": "pages/api-docs/flag-evaluation-api.md",
+          "url": "/api-docs/flag-evaluation-api",
+          "fullUrl": "https://docs.featbit.co/api-docs/flag-evaluation-api",
+          "summary": "Brief reference to Flag Evaluation APIs for evaluating feature flags for users, directing readers to the SDK documentation for detailed information about the API endpoints."
+        },
+        {
+          "path": "pages/api-docs/faq.md",
+          "url": "/api-docs/faq",
+          "fullUrl": "https://docs.featbit.co/api-docs/faq",
+          "summary": "REST API FAQs covering how to get the API endpoint from Get Started page, accessing API documentation (demo site or local /docs/index.html), and detailed anatomy of a feature flag JSON structure with explanations of all properties."
+        },
+
+        {
+          "path": "pages/sdk/retrieve-feature-flags-with-api.mdx",
+          "url": "/sdk/retrieve-feature-flags-with-api",
+          "fullUrl": "https://docs.featbit.co/sdk/retrieve-feature-flags-with-api",
+          "summary": "Explains how to use the Evaluation Server APIs to retrieve feature flags for both client-side and server-side SDKs. Details the differences between client-side (single user, server-evaluated) and server-side (multiple users, locally evaluated) approaches."
+        }
+      ]
+    },
+    {
+      "title": "Data Import and Export",
+      "path": "/data-import-and-export",
+      "summary": "Documentation for importing and exporting data including end users, feature flags, segments, and analytics data. Covers downloading and uploading end users in JSON format, synchronizing feature flags and segments between environments using Relay Proxy, and exporting feature flag evaluation data and experiment events from ClickHouse or MongoDB to third-party data platforms for advanced analytics and reporting.",
+      "files": [
+        {
+          "path": "pages/data-import-and-export/data-export.mdx",
+          "url": "/data-import-and-export/data-export",
+          "fullUrl": "https://docs.featbit.co/data-import-and-export/data-export",
+          "summary": "Describes temporary method for exporting feature flag usage data and experiment events from ClickHouse (Pro) or MongoDB (Standard) to third-party data platforms. Details the data structure for feature flag evaluations and custom experiment events."
+        },
+        {
+          "path": "pages/data-import-and-export/end-users.mdx",
+          "url": "/data-import-and-export/end-users",
+          "fullUrl": "https://docs.featbit.co/data-import-and-export/end-users",
+          "summary": "Explains how to download and upload end users for the current environment via the Data sync page. Notes that uploads perform insert/update for users and insert-only for user properties, returning JSON file format."
+        },
+        {
+          "path": "pages/data-import-and-export/feature-flags-and-segments.md",
+          "url": "/data-import-and-export/feature-flags-and-segments",
+          "fullUrl": "https://docs.featbit.co/data-import-and-export/feature-flags-and-segments",
+          "summary": "Brief reference pointing to the Relay Proxy documentation for synchronizing feature flags and segments between FeatBit servers (e.g., dev to prod environments)."
+        }
+      ]
+    },
+    {
+      "title": "IAM (Identity and Access Management)",
+      "path": "/iam",
+      "summary": "Complete Identity and Role Based Access Control documentation, providing granular access control for FeatBit resources. Covers team member management, IAM groups for organizing users, and policy system with three control levels (All, General, Project, Environment). Includes guidance on built-in policies, creating custom policies with specific permissions, and applying least-privilege security principles for feature flags, segments, projects, and environments.",
+      "files": [
+        {
+          "path": "pages/iam/overview.md",
+          "url": "/iam/overview",
+          "fullUrl": "https://docs.featbit.co/iam/overview",
+          "summary": "Overview of FeatBit's Identity and Access Management (IAM) system inspired by AWS IAM. Provides precise access control for feature flags, projects, environments, and teams through custom policies, with default Owner permissions for first user."
+        },
+        {
+          "path": "pages/iam/teams.md",
+          "url": "/iam/teams",
+          "fullUrl": "https://docs.featbit.co/iam/teams",
+          "summary": "Explains team member management in FeatBit including adding members with initial permissions/groups, deleting members, updating member information, filtering members, and assigning permission policies. Currently supports one default team."
+        },
+        {
+          "path": "pages/iam/groups.md",
+          "url": "/iam/groups",
+          "fullUrl": "https://docs.featbit.co/iam/groups",
+          "summary": "Explains IAM groups as collections of members for easier permission management. Groups can contain many users, cannot be nested, and there's no default all-users group. Details group creation, management, and policy attachment."
+        },
+        {
+          "path": "pages/iam/policies.md",
+          "url": "/iam/policies",
+          "fullUrl": "https://docs.featbit.co/iam/policies",
+          "summary": "Details FeatBit's IAM policy system for access control including three control levels (All, General, Project, Environment). Explains built-in policies, creating custom policies, adding permissions, and managing policy assignments to teams and groups."
+        }
+      ]
+    },
+    {
+      "title": "Installation",
+      "path": "/installation",
+      "summary": "Comprehensive deployment guide covering three deployment options: Standalone (Postgres-only, minimal setup), Standard (Postgres/MongoDB + Redis for balanced scalability), and Professional (adds ClickHouse + Kafka for high-volume analytics). Includes Docker Compose quick start, Terraform deployment for AWS, custom infrastructure setup with environment variable configuration, database seeding instructions, and troubleshooting guides for common installation issues like port conflicts and public accessibility.",
+      "files": [
+        {
+          "path": "pages/installation/deployment-options.md",
+          "url": "/installation/deployment-options",
+          "fullUrl": "https://docs.featbit.co/installation/deployment-options",
+          "summary": "Compares three FeatBit deployment options: Standalone (Postgres-only, minimal setup), Standard (Postgres/MongoDB + Redis, balanced scalability), and Professional (adds ClickHouse + Kafka for high-volume analytics). Provides infrastructure component comparison table."
+        },
+        {
+          "path": "pages/installation/docker-compose.mdx",
+          "url": "/installation/docker-compose",
+          "fullUrl": "https://docs.featbit.co/installation/docker-compose",
+          "summary": "Quick start guide for installing FeatBit using Docker Compose. Covers three deployment options (Standalone, Standard, Professional) with commands for each, default login credentials, and notes about the init-kafka-topics service."
+        },
+        {
+          "path": "pages/installation/terraform-aws.mdx",
+          "url": "/installation/terraform-aws",
+          "fullUrl": "https://docs.featbit.co/installation/terraform-aws",
+          "summary": "Brief reference to the featbit-terraform-aws repository for deploying FeatBit to AWS using Terraform. Includes an infrastructure diagram showing the AWS deployment architecture."
+        },
+        {
+          "path": "pages/installation/use-your-own-infrastructure.mdx",
+          "url": "/installation/use-your-own-infrastructure",
+          "fullUrl": "https://docs.featbit.co/installation/use-your-own-infrastructure",
+          "summary": "Guide for running FeatBit with custom infrastructure including environment variable configuration for each service, database seeding instructions for MongoDB/Postgres, and Kafka topic setup. Links to service-specific documentation."
+        },
+        {
+          "path": "pages/installation/faq.md",
+          "url": "/installation/faq",
+          "fullUrl": "https://docs.featbit.co/installation/faq",
+          "summary": "Installation FAQs covering how to resolve Docker container port conflicts by modifying docker-compose.yml bindings, and how to make FeatBit portal publicly accessible by configuring API_URL and EVALUATION_URL environment variables."
+        }
+      ]
+    },
+    {
+      "title": "Integrations",
+      "path": "/integrations",
+      "summary": "Extensive integration documentation covering authentication (API access tokens), webhooks for event notifications, Single Sign-On (SSO) with OpenID Connect providers (Okta, KeyCloak, Auth0), observability integrations (OpenTelemetry, New Relic, Grafana, DataDog), chat app integrations (Slack), and data analytics platforms (GrowthBook). Each integration includes step-by-step setup instructions, configuration examples, and best practices for seamless connection between FeatBit and external services.",
+      "files": [
+        {
+          "path": "pages/integrations/api-access-tokens.md",
+          "url": "/integrations/api-access-tokens",
+          "fullUrl": "https://docs.featbit.co/integrations/api-access-tokens",
+          "summary": "Explains API access token authentication for FeatBit REST API including token scoping, permissions, and the differences between personal tokens (linked to account) and service tokens (independent, permanent permissions). Emphasizes least privilege principle."
+        },
+        {
+          "path": "pages/integrations/webhooks.mdx",
+          "url": "/integrations/webhooks",
+          "fullUrl": "https://docs.featbit.co/integrations/webhooks",
+          "summary": "Comprehensive guide for creating and using webhooks to subscribe to flag/segment changes in FeatBit. Details webhook events, timeout/retry logic, payload templates, and step-by-step setup instructions."
+        }
+      ],
+      "subsections": [
+        {
+          "title": "Single Sign-On",
+          "path": "/integrations/single-sign-on",
+          "summary": "Complete SSO integration guides using OpenID Connect protocol with major identity providers. Includes step-by-step configuration instructions for Okta, KeyCloak, and Auth0, covering application creation, redirect URIs, client credentials, authorization endpoints, and FeatBit SSO setup. Requires FeatBit 3.0.0+ and Enterprise subscription.",
+          "files": [
+            {
+              "path": "pages/integrations/single-sign-on/single-sign-on.mdx",
+              "url": "/integrations/single-sign-on/single-sign-on",
+              "fullUrl": "https://docs.featbit.co/integrations/single-sign-on/single-sign-on",
+              "summary": "Overview of Single Sign-On (SSO) configuration for FeatBit 3.0.0+ via OpenID Connect. Requires Enterprise subscription and lists required OIDC settings including client ID, secrets, endpoints, and authentication methods."
+            },
+            {
+              "path": "pages/integrations/single-sign-on/okta.mdx",
+              "url": "/integrations/single-sign-on/okta",
+              "fullUrl": "https://docs.featbit.co/integrations/single-sign-on/okta",
+              "summary": "Step-by-step guide for configuring Okta as an Identity Provider for FeatBit SSO. Covers application creation, redirect URI configuration, client credentials, and authorization endpoint setup."
+            },
+            {
+              "path": "pages/integrations/single-sign-on/keycloak.mdx",
+              "url": "/integrations/single-sign-on/keycloak",
+              "fullUrl": "https://docs.featbit.co/integrations/single-sign-on/keycloak",
+              "summary": "Complete tutorial for setting up KeyCloak as an Identity Provider for FeatBit SSO. Includes instructions for running Keycloak in Docker, creating a realm, configuring an OIDC client with proper settings."
+            },
+            {
+              "path": "pages/integrations/single-sign-on/auth0.mdx",
+              "url": "/integrations/single-sign-on/auth0",
+              "fullUrl": "https://docs.featbit.co/integrations/single-sign-on/auth0",
+              "summary": "Guide for configuring Auth0 as an Identity Provider for FeatBit SSO. Details application creation in Auth0, setting callback URLs, allowed origins, and obtaining OAuth authorization and token URLs."
+            }
+          ]
+        },
+        {
+          "title": "Observability",
+          "path": "/integrations/observability",
+          "summary": "Comprehensive observability integrations for monitoring flag changes and system performance including OpenTelemetry instrumentation for metrics/traces/logs, New Relic for deployment tracking and metric-based triggers, Grafana for flag change annotations, and DataDog with RUM integration, events tracking, triggers, and APM insights export. Enables correlation of feature releases with system behavior.",
+          "files": [
+            {
+              "path": "pages/integrations/observability/opentelemetry.mdx",
+              "url": "/integrations/observability/opentelemetry",
+              "fullUrl": "https://docs.featbit.co/integrations/observability/opentelemetry",
+              "summary": "Explains OpenTelemetry instrumentation in FeatBit's backend services for publishing observability metrics, traces, and logs. Provides configuration instructions and a ready-to-run example using Seq, Jaeger, and Prometheus."
+            },
+            {
+              "path": "pages/integrations/observability/newrelic.mdx",
+              "url": "/integrations/observability/newrelic",
+              "fullUrl": "https://docs.featbit.co/integrations/observability/newrelic",
+              "summary": "Details two New Relic integration methods: sending feature flag change events as deployment events for change tracking, and using triggers to toggle flags based on performance metric thresholds. Includes webhook setup and payload templates."
+            },
+            {
+              "path": "pages/integrations/observability/grafana.mdx",
+              "url": "/integrations/observability/grafana",
+              "fullUrl": "https://docs.featbit.co/integrations/observability/grafana",
+              "summary": "Guide for integrating FeatBit with Grafana to display flag/segment changes as annotations on graphs. Covers service account creation, token generation, and webhook configuration with payload templates."
+            },
+            {
+              "path": "pages/integrations/observability/datadog.mdx",
+              "url": "/integrations/observability/datadog",
+              "fullUrl": "https://docs.featbit.co/integrations/observability/datadog",
+              "summary": "Comprehensive DataDog integration guide covering four methods: RUM integration for feature flag tracking, events integration for flag updates, flag triggers for metric-based rollbacks, and exporting insights to APM. Includes code examples and configuration details."
+            }
+          ]
+        },
+        {
+          "title": "Chat Apps",
+          "path": "/integrations/chat-apps",
+          "summary": "Integration guides for sending feature flag and segment change notifications to team chat platforms. Includes Slack integration using webhooks and the Slack Sending Messages API with payload templates for formatted messages. Keeps teams informed of flag changes in real-time.",
+          "files": [
+            {
+              "path": "pages/integrations/chat-apps/slack.mdx",
+              "url": "/integrations/chat-apps/slack",
+              "fullUrl": "https://docs.featbit.co/integrations/chat-apps/slack",
+              "summary": "Shows how to send feature flag or segment change events from FeatBit to Slack channels using the Slack Sending Messages API. Provides webhook payload template for formatting messages with flag/segment information."
+            }
+          ]
+        },
+        {
+          "title": "Data Analytics",
+          "path": "/integrations/data-analytic",
+          "summary": "Integration documentation for connecting FeatBit with external analytics platforms. Covers GrowthBook integration by connecting FeatBit's ClickHouse database for advanced A/B testing analysis, including data source configuration, experiment assignment queries, and metric definitions. Enables deeper statistical analysis of experiments beyond built-in capabilities.",
+          "files": [
+            {
+              "path": "pages/integrations/data-analytic/growthbook.mdx",
+              "url": "/integrations/data-analytic/growthbook",
+              "fullUrl": "https://docs.featbit.co/integrations/data-analytic/growthbook",
+              "summary": "Guide for connecting FeatBit's ClickHouse database to Growthbook for A/B testing. Explains how to configure data source, create experiment assignment queries, and add metrics for analyzing feature flag experiments."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Licenses",
+      "path": "/licenses",
+      "summary": "Documentation explaining FeatBit's Open Core licensing model with MIT license for core functionality and enterprise features requiring license keys. Covers the process of obtaining workspace IDs, requesting trial or production license keys, and configuring licenses (version 3.0.0+) to enable enterprise features including scheduled flag changes, change requests, Single Sign-On (SSO), and multi-organization support. Includes detailed pricing information for self-hosting with three tiers: Open Source & Free (forever free with unlimited feature flags, environments, team members, service connections, and MAU), Enterprise Standard License ($3,999/year with SSO, RBAC, advanced workflows), and Enterprise Premium Features (custom pricing for fine-grained RBAC, additional auto-sync agents, and high availability consultation).",
+      "files": [
+        {
+          "path": "pages/licenses/overview.md",
+          "url": "/licenses/overview",
+          "fullUrl": "https://docs.featbit.co/licenses/overview",
+          "summary": "Explains FeatBit's Open Core licensing model with MIT license for most code. Lists enterprise features requiring license keys including Schedule, Change request, SSO, and Multi-organizations support."
+        },
+        {
+          "path": "pages/licenses/setup-license-key.mdx",
+          "url": "/licenses/setup-license-key",
+          "fullUrl": "https://docs.featbit.co/licenses/setup-license-key",
+          "summary": "Complete guide for obtaining and configuring a FeatBit license key (version 3.0.0+) to enable enterprise features. Explains how to get workspace ID, request trial or production licenses, and configure the license in the system."
+        },
+        {
+          "path": "https://featbit.co/pricing",
+          "url": "https://featbit.co/pricing",
+          "fullUrl": "https://featbit.co/pricing",
+          "summary": "Official FeatBit pricing page detailing self-hosting plans and enterprise options. Features three main tiers: Open Source & Free (forever free with unlimited feature flags, environments, team members, service connections, MAU, advanced targeting, A/B testing, real-time updates, REST API & SDKs), Enterprise Standard License ($3,999/year adding SSO authentication, advanced workflow, role-based access control, global users & shareable segments, priority support with 12 business hours SLA), and Enterprise Premium Features (custom pricing for fine-grained RBAC at feature flag level, additional auto-sync agents for scalability, high availability consultation). Also offers Enterprise Custom Support Service with dedicated installation/hosting support, system maintenance training, and 4 business hour reply SLA. Emphasizes 100% open source with no vendor lock-in, 100% data privacy with private deployment, and no usage limitations (unlimited seats, service connections, and MAU). Provides comparison with competitors highlighting lower costs and simple flat pricing. Optional SaaS offering starting at $49/month for small teams. Channel partner program available."
+        }
+      ]
+    },
+    {
+      "title": "Tech Stack",
+      "path": "/tech-stack",
+      "summary": "In-depth technical documentation of FeatBit's architecture, infrastructure, and performance characteristics. Covers the four core application services (UI Service in Angular, API Service in .NET, Evaluation Server for high-performance flag evaluation, Data Analytics Service in Python), three infrastructure components (Database, Message Queue, Caching), real-time data synchronization flows using WebSocket technology, and performance benchmarks demonstrating the system's scalability and low-latency capabilities.",
+      "files": [
+        {
+          "path": "pages/tech-stack/overview.md",
+          "url": "/tech-stack/overview",
+          "fullUrl": "https://docs.featbit.co/tech-stack/overview",
+          "summary": "Explains FeatBit's architecture focusing on scalability, performance, and privacy. Details the push-based real-time feature flag updates using WebSocket technology and the containerized services architecture that enables horizontal scaling."
+        },
+        {
+          "path": "pages/tech-stack/application-services.md",
+          "url": "/tech-stack/application-services",
+          "fullUrl": "https://docs.featbit.co/tech-stack/application-services",
+          "summary": "Describes FeatBit's four core services: UI Service (Angular frontend), API Service (.NET backend), Evaluation Server Service (high-performance flag evaluation), and Data Analytics Service (Python-based analytics engine). Each service can be deployed independently."
+        },
+        {
+          "path": "pages/tech-stack/infrastructure-components.md",
+          "url": "/tech-stack/infrastructure-components",
+          "fullUrl": "https://docs.featbit.co/tech-stack/infrastructure-components",
+          "summary": "Describes the three critical infrastructure components in FeatBit: Database (MongoDB/Postgres/ClickHouse), Message Queue (Postgres/Redis/Kafka), and Caching (Redis/None). Provides guidance on choosing the right infrastructure based on organizational needs."
+        },
+        {
+          "path": "pages/tech-stack/data-flows.md",
+          "url": "/tech-stack/data-flows",
+          "fullUrl": "https://docs.featbit.co/tech-stack/data-flows",
+          "summary": "Details FeatBit's internal data flows including data synchronization between SDKs and the Evaluation Server, and how feature flag/segment changes are propagated in real-time through the Message Queue to connected SDKs."
+        },
+        {
+          "path": "pages/tech-stack/benchmark.md",
+          "url": "/tech-stack/benchmark",
+          "fullUrl": "https://docs.featbit.co/tech-stack/benchmark",
+          "summary": "Presents performance benchmark results for the Evaluation Server service on AWS EC2 t2.micro instance. Shows the service can handle 1100 new connections per second with P99 response time under 200ms while maintaining error rates below 1%."
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "totalFiles": 75,
+    "totalSections": 12,
+    "totalSubsections": 9
+  }
+}

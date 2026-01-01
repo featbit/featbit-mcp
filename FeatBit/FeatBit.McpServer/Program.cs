@@ -34,11 +34,17 @@ builder.Services.AddAiChatClient(builder.Configuration);
 // Currently using embedded resources, but can be replaced with S3, HTTP, Database, etc.
 builder.Services.AddSingleton<IDocumentLoader, ResourcesDocumentLoader>();
 
+// Claude Skills markdown parser for parsing all markdown documentation
+builder.Services.AddSingleton<IClaudeSkillsMarkdownParser, ClaudeSkillsMarkdownParser>();
+
 // Deployment service for routing and selecting deployment documentation
 builder.Services.AddSingleton<DeploymentService>();
 
 // SDK service for routing and selecting SDK documentation
 builder.Services.AddSingleton<SdkService>();
+
+// Documentation service for routing questions to documentation URLs
+builder.Services.AddSingleton<DocService>();
 
 // ========================================
 // Register SDK Services
