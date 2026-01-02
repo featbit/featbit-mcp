@@ -29,4 +29,10 @@ public sealed record FeatureFlag(string Key, bool DefaultValue, string Descripti
         DefaultValue: true,
         Description: "Controls whether the SDK integration code generation tool is enabled"
     );
+    
+    public static readonly FeatureFlag DocNotFound = new(
+        Key: "doc-not-found",
+        DefaultValue: false,
+        Description: "Controls whether to return a suggestion message when no documentation is found"
+    );
 }

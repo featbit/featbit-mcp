@@ -1,5 +1,6 @@
 using FeatBit.McpServer.Domain.Sdks;
 using FeatBit.McpServer.Extensions;
+using FeatBit.McpServer.FeatureFlags;
 using FeatBit.McpServer.Infrastructure;
 using FeatBit.McpServer.Middleware;
 using FeatBit.McpServer.Services;
@@ -27,12 +28,21 @@ builder.Services.AddFeatBit(options =>
 // Add AI chat client (OpenAI, Azure OpenAI, etc.)
 builder.Services.AddAiChatClient(builder.Configuration);
 
+// Add HttpContextAccessor to access HTTP request information
+builder.Services.AddHttpContextAccessor();
+
+// Session context - provides session ID from MCP headers or OpenTelemetry trace
+builder.Services.AddScoped<ISessionContext, SessionContext>();
+
 // Document loader service - abstraction for loading documents from various sources
 // Currently using embedded resources, but can be replaced with S3, HTTP, Database, etc.
 builder.Services.AddSingleton<IDocumentLoader, ResourcesDocumentLoader>();
 
 // Claude Skills markdown parser for parsing all markdown documentation
 builder.Services.AddSingleton<IClaudeSkillsMarkdownParser, ClaudeSkillsMarkdownParser>();
+
+// Feature flag evaluator with OpenTelemetry tracing support
+builder.Services.AddSingleton<IFeatureFlagEvaluator, FeatureFlagEvaluator>();
 
 // Deployment service for routing and selecting deployment documentation
 builder.Services.AddSingleton<DeploymentService>();

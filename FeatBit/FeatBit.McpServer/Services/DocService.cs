@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.AI;
+using FeatBit.McpServer.FeatureFlags;
 using FeatBit.McpServer.Infrastructure;
 
 namespace FeatBit.McpServer.Services;
@@ -21,16 +22,19 @@ public class DocService
     private readonly IChatClient _chatClient;
     private readonly ILogger<DocService> _logger;
     private readonly IDocumentLoader _documentLoader;
+    private readonly IFeatureFlagEvaluator _featureFlag;
     private DocTree? _docTree;
 
     public DocService(
         IChatClient chatClient,
         ILogger<DocService> logger,
-        IDocumentLoader documentLoader)
+        IDocumentLoader documentLoader,
+        IFeatureFlagEvaluator featureFlagEvaluator)
     {
         _chatClient = chatClient;
         _logger = logger;
         _documentLoader = documentLoader;
+        _featureFlag = featureFlagEvaluator;
     }
 
     /// <summary>
@@ -254,6 +258,14 @@ public class DocService
         }
 
         _logger.LogWarning("No URLs selected by AI");
+        
+        // Check feature flag when no URLs are found
+        if (_featureFlag.ReleaseEnabled(FeatureFlag.DocNotFound))
+        {
+            _logger.LogInformation("Returning suggestion message due to doc-not-found feature flag");
+            return new List<string> { "Please try with other prompt" };
+        }
+        
         return new List<string>();
     }
 }
