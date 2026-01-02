@@ -39,7 +39,7 @@ jobs:
       run: dotnet build ./FeatBit/FeatBit.sln --configuration Release --no-restore
     
     - name: Publish application
-      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-build
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
     
     - name: Upload artifact for deployment
       uses: actions/upload-artifact@v4
