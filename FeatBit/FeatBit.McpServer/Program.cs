@@ -80,13 +80,16 @@ builder.Services
 
 var app = builder.Build();
 
+// Add MCP tool tracing middleware (must be before exception handler to trace all requests)
+app.UseMiddleware<McpToolTracingMiddleware>();
+
 // Add global exception handling middleware
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Map Aspire default endpoints (health checks, etc.)
 app.MapDefaultEndpoints();
 
-// Map MCP endpoint
-app.MapMcp();
+// Map MCP endpoint to /mcp path
+app.MapMcp("/mcp");
 
 app.Run();

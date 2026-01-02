@@ -76,8 +76,7 @@ public class DocService
         {
             if (!urls.Any())
             {
-                _logger.LogInformation("Returning suggestion message due to doc-not-found feature flag");
-                return new List<string> { "Please try with other prompt" };
+                _logger.LogTrace("Do something when no documentation is found");
             }
         }
 
