@@ -1,4 +1,4 @@
-namespace FeatBit.McpServer.FeatureFlags;
+namespace FeatBit.FeatureFlags;
 
 /// <summary>
 /// Represents a feature flag with its key and default value.

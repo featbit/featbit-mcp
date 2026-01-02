@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using FeatBit.Contracts;
 
 namespace FeatBit.McpServer.Infrastructure;
 

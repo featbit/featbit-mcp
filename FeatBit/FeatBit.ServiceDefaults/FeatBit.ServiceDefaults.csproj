@@ -22,4 +22,8 @@
     <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FeatBit.FeatureFlags\FeatBit.FeatureFlags.csproj" />
+  </ItemGroup>
+
 </Project>

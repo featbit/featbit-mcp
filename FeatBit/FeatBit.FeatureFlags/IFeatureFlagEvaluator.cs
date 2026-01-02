@@ -1,6 +1,4 @@
-using FeatBit.Sdk.Server.Model;
-
-namespace FeatBit.McpServer.FeatureFlags;
+namespace FeatBit.FeatureFlags;
 
 /// <summary>
 /// Provides feature flag evaluation with OpenTelemetry tracing support.

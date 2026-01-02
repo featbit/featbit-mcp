@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using FeatBit.McpServer.FeatureFlags;
+using FeatBit.FeatureFlags;
 using FeatBit.McpServer.Services;
 using FeatBit.Sdk.Server;
 using FeatBit.Sdk.Server.Model;

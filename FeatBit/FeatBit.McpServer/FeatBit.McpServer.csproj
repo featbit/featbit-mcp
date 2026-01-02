@@ -42,6 +42,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FeatBit.ServiceDefaults\FeatBit.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\FeatBit.FeatureFlags\FeatBit.FeatureFlags.csproj" />
+    <ProjectReference Include="..\FeatBit.Contracts\FeatBit.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

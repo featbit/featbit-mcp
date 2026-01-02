@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeatBit.ServiceDefaults", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatBit.McpServer", "FeatBit.McpServer\FeatBit.McpServer.csproj", "{F4F0C9F9-0DFD-4D8F-8785-1B9B4B496338}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatBit.FeatureFlags", "FeatBit.FeatureFlags\FeatBit.FeatureFlags.csproj", "{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{F4F0C9F9-0DFD-4D8F-8785-1B9B4B496338}.Release|x64.Build.0 = Release|Any CPU
 		{F4F0C9F9-0DFD-4D8F-8785-1B9B4B496338}.Release|x86.ActiveCfg = Release|Any CPU
 		{F4F0C9F9-0DFD-4D8F-8785-1B9B4B496338}.Release|x86.Build.0 = Release|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Debug|x64.Build.0 = Debug|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Debug|x86.Build.0 = Debug|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Release|x64.ActiveCfg = Release|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Release|x64.Build.0 = Release|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Release|x86.ActiveCfg = Release|Any CPU
+		{6077CCA5-2F0A-49AA-B365-B9BA045C9C5A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

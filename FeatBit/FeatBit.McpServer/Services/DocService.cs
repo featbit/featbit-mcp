@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.AI;
-using FeatBit.McpServer.FeatureFlags;
+using FeatBit.FeatureFlags;
 using FeatBit.McpServer.Infrastructure;
 
 namespace FeatBit.McpServer.Services;

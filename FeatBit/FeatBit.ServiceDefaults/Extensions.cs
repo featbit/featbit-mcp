@@ -1,4 +1,5 @@
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using FeatBit.FeatureFlags;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,7 +64,7 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddSource("FeatBit.FeatureFlags")
+                    .AddFeatBitFeatureFlagsInstrumentation()
                     .AddSource("FeatBit.McpTools")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
