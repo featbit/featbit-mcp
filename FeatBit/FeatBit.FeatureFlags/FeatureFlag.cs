@@ -19,7 +19,6 @@ namespace FeatBit.FeatureFlags;
 /// <param name="Description">Human-readable description of what this flag controls</param>
 public sealed record FeatureFlag(string Key, bool DefaultValue, string Description)
 {
-    
     public static readonly FeatureFlag DocNotFound = new(
         Key: "doc-not-found",
         DefaultValue: false,
