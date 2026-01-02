@@ -25,12 +25,9 @@ public class FeatBitSdkTools(
         [Description("Describe what you're trying to achieve with the FeatBit SDK (e.g., integrate featbit .net sdk in asp.net core project.)")]
         string topic)
     {
-        logger.LogInformation("MCP Tool Called: GenerateIntegrationCode for sdk={Sdk}, topic={Topic}", sdk, topic);
-
         // Delegate to SDK service for routing and documentation retrieval
         var documentation = await sdkService.GetSdkDocumentationAsync(sdk, topic);
         
-        logger.LogInformation("MCP Tool Result: GenerateIntegrationCode completed successfully for {Sdk}", sdk);
         return documentation ?? string.Empty;
     }
 }

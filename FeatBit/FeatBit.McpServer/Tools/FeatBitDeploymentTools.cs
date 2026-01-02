@@ -24,16 +24,12 @@ public class FeatBitDeploymentTools(
         [Description("Describe the specific deployment topic you want to learn.")]
         string topic)
     {
-        logger.LogInformation("MCP Tool Called: HowToDeploy for method={Method}, platform={Platform}, topic={Topic}", 
-            method, whereToDeploy, topic);
-
         // Use the deployment service to get appropriate documentation
         var documentation = await deploymentService.GetDeploymentDocumentationAsync(
             method, 
             whereToDeploy, 
             topic);
         
-        logger.LogInformation("MCP Tool Result: HowToDeploy completed successfully");
         return documentation ?? string.Empty;
     }
 }
