@@ -2,8 +2,37 @@
 
 A Model Context Protocol (MCP) server that enables AI coding agents to interact with FeatBit feature flag management. Built with .NET 10, ASP.NET Core, and Aspire for modern cloud-native architecture.
 
+## Quick Start
+
+Get started immediately by connecting to our hosted MCP server - no installation required!
+
+### Connect to Hosted MCP Server
+
+Add this configuration to your VS Code MCP settings (`.vscode/mcp.json`):
+
+```json
+{
+  "servers": {
+    "featbit-mcp-remote": {
+      "type": "http",
+      "url": "https://mcp.featbit.co/mcp"
+    }
+  }
+}
+```
+
+Then ask your AI assistant questions like:
+- "How do I integrate FeatBit .NET SDK in my ASP.NET Core project?"
+- "Show me how to deploy FeatBit to Kubernetes using Helm"
+- "What's the best way to use feature flags in React?"
+
+That's it! You're ready to use FeatBit MCP server.
+
+---
+
 ## Table of Contents
 
+- [Quick Start](#quick-start)
 - [What's This Project For](#whats-this-project-for)
 - [How to Run Locally](#how-to-run-locally)
 - [How to Build and Release](#how-to-build-and-release)
@@ -130,7 +159,24 @@ Press `Ctrl+Shift+P` → "Tasks: Run Task" → Select a task
 
 #### From VS Code or GitHub Copilot
 
-Configure your MCP client (e.g., VS Code settings) to connect to the server:
+**Option 1: Connect to Hosted MCP Server** (Recommended)
+
+Configure your MCP client to connect to the hosted FeatBit MCP server:
+
+```json
+{
+  "servers": {
+    "featbit-mcp-remote": {
+      "type": "http",
+      "url": "https://mcp.featbit.co/mcp"
+    }
+  }
+}
+```
+
+**Option 2: Run Locally via STDIO**
+
+Configure your MCP client to run the server locally:
 
 ```json
 {
@@ -143,6 +189,21 @@ Configure your MCP client (e.g., VS Code settings) to connect to the server:
         "--project",
         "c:/Code/featbit/featbit-mcp/FeatBit/FeatBit.McpServer"
       ]
+    }
+  }
+}
+```
+
+**Option 3: Connect to Local HTTP Server**
+
+If you're running the server locally via HTTP:
+
+```json
+{
+  "servers": {
+    "featbit-mcp-local": {
+      "type": "http",
+      "url": "http://localhost:5180/mcp"
     }
   }
 }

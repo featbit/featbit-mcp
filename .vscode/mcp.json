@@ -10,6 +10,10 @@
     "featbit-mcp": {
       "type": "http",
       "url": "http://localhost:5180/mcp"
+    },
+    "featbit-mcp-remote": {
+      "type": "http",
+      "url": "https://mcp.featbit.co/mcp"
     }
   }
 }
