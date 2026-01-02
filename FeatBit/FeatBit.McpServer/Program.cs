@@ -1,12 +1,9 @@
-using FeatBit.McpServer.Extensions;
-using FeatBit.McpServer.Services;
-using FeatBit.McpServer.Infrastructure;
 using FeatBit.McpServer.Domain.Sdks;
-using FeatBit.McpServer.Tools;
+using FeatBit.McpServer.Extensions;
+using FeatBit.McpServer.Infrastructure;
 using FeatBit.McpServer.Middleware;
-using FeatBit.Sdk.Server;
+using FeatBit.McpServer.Services;
 using FeatBit.Sdk.Server.DependencyInjection;
-using FeatBit.Sdk.Server.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
