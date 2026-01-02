@@ -71,14 +71,10 @@ public class DocService
         }
         var urls = await SelectBestUrlsAsync(topic, section, cancellationToken);
 
-        // Check feature flag when no URLs are found
-        if (_featureFlag.ReleaseEnabled(FeatureFlag.DocNotFound))
-        {
-            if (!urls.Any())
-            {
-                _logger.LogTrace("Do something when no documentation is found");
-            }
-        }
+        // Use feature flag to guard the URL selection process
+        urls = await _featureFlag.ReleaseEnabledThenAsync(
+            FeatureFlag.DocNotFound,
+            async () => await SelectBestUrlsAsync(topic, section, cancellationToken));
 
         return urls;
     }

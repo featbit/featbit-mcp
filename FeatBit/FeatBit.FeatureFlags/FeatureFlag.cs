@@ -22,7 +22,7 @@ public sealed record FeatureFlag(string Key, bool DefaultValue, string Descripti
     
     public static readonly FeatureFlag DocNotFound = new(
         Key: "doc-not-found",
-        DefaultValue: true,
+        DefaultValue: false,
         Description: "Controls whether to return a suggestion message when no documentation is found"
     );
 }

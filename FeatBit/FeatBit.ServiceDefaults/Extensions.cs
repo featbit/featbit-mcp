@@ -66,6 +66,10 @@ public static class Extensions
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddFeatBitFeatureFlagsInstrumentation()
                     .AddSource("FeatBit.McpTools")
+                    // Add Microsoft.Extensions.AI tracing for capturing AI model calls
+                    // This captures: model name, prompts, responses, token usage, latency
+                    .AddSource("Microsoft.Extensions.AI")
+                    .SetSampler(new AlwaysOnSampler()) // Ensure all AI traces are sampled
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>

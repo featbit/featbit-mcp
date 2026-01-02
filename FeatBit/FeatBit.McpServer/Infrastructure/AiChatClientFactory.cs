@@ -16,8 +16,9 @@ public class AiChatClientFactory
     /// </summary>
     /// <param name="configuration">Configuration containing AI provider settings</param>
     /// <param name="logger">Logger for diagnostic information</param>
+    /// <param name="loggerFactory">Logger factory for middleware</param>
     /// <returns>An IChatClient instance, or NullChatClient if no provider is configured</returns>
-    public static IChatClient CreateChatClient(IConfiguration configuration, ILogger logger)
+    public static IChatClient CreateChatClient(IConfiguration configuration, ILogger logger, ILoggerFactory loggerFactory)
     {
         var chatClient = TryCreateChatClient(configuration, logger);
         
@@ -30,6 +31,14 @@ public class AiChatClientFactory
 
         var provider = configuration["AI:Provider"] ?? "auto-detected";
         logger.LogInformation("AI chat client initialized successfully using provider: {Provider}", provider);
+        
+        // Wrap the chat client with custom OpenTelemetry middleware and logging
+        // Custom middleware manually records all prompts, responses, tokens, and function calls
+        chatClient = chatClient
+            .AsBuilder()
+            .Use(innerClient => new ChatClientOpenTelemetryMiddleware(innerClient, logger))
+            .UseLogging(loggerFactory)
+            .Build();
         
         return chatClient;
     }

@@ -18,8 +18,9 @@ public static class AiServiceExtensions
         {
             var config = sp.GetRequiredService<IConfiguration>();
             var logger = sp.GetRequiredService<ILogger<IChatClient>>();
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-            return AiChatClientFactory.CreateChatClient(config, logger);
+            return AiChatClientFactory.CreateChatClient(config, logger, loggerFactory);
         });
 
         return services;
