@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using FeatBit.McpServer.FeatureFlags;
 using FeatBit.McpServer.Services;
-using FeatBit.McpServer.Tools.Deployments;
 using FeatBit.Sdk.Server;
 using FeatBit.Sdk.Server.Model;
 using ModelContextProtocol.Server;

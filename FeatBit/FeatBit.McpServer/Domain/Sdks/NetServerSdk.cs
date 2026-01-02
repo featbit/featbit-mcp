@@ -102,7 +102,7 @@ public class NetServerSdk
 
         var options = new ChatOptions
         {
-            MaxOutputTokens = 50,
+            MaxOutputTokens = 5000,
             Temperature = 0.3f // Lower temperature for more deterministic results
         };
 

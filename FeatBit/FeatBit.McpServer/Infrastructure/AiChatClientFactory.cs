@@ -66,7 +66,7 @@ public class AiChatClientFactory
     {
         var endpoint = configuration["AI:AzureOpenAI:Endpoint"];
         var apiKey = configuration["AI:AzureOpenAI:ApiKey"];
-        var deployment = configuration["AI:AzureOpenAI:Deployment"] ?? "gpt-4o-mini";
+        var deployment = configuration["AI:AzureOpenAI:Deployment"] ?? "gpt-5.1";
 
         if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
         {
@@ -74,14 +74,11 @@ public class AiChatClientFactory
             return null;
         }
 
-        logger.LogInformation("Initializing Azure OpenAI chat client with endpoint: {Endpoint}, deployment: {Deployment}", 
+        logger.LogInformation("Initializing Azure OpenAI chat client - endpoint: {Endpoint}, deployment: {Deployment}", 
             endpoint, deployment);
         
-        return new AzureOpenAIClient(
-            new Uri(endpoint), 
-            new AzureKeyCredential(apiKey))
-            .GetChatClient(deployment)
-            .AsIChatClient();
+        var azureClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+        return azureClient.GetChatClient(deployment).AsIChatClient();
     }
 
     private static IChatClient? CreateAnthropicChatClient(IConfiguration configuration, ILogger logger)
