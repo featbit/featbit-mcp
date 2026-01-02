@@ -448,22 +448,28 @@ Documentation is embedded in the assembly:
 - Larger assembly size
 - Documentation updates require recompilation
 
-#### Bootstrap Mode for Offline Operation
+#### Bootstrap Mode and Offline Operation
 
-The server supports loading feature flags from a local JSON file:
+The server uses feature flags defined in [FeatureFlag.cs](FeatBit/FeatBit.FeatureFlags/FeatureFlag.cs) with default values as fallback:
 
-```json
-// featbit-bootstrap.json
+```csharp
+public sealed record FeatureFlag(string Key, bool DefaultValue, string Description)
 {
-  "featureFlags": [...],
-  "segments": [...]
+    public static readonly FeatureFlag DocNotFound = new(
+        Key: "doc-not-found",
+        DefaultValue: false,
+        Description: "Controls whether to return a suggestion message when no documentation is found"
+    );
 }
 ```
 
 This enables:
-- Development without internet connection
-- Testing with specific flag configurations
-- Fallback when FeatBit server is unavailable
+- Development without connecting to FeatBit server
+- Automatic fallback when FeatBit server is unavailable
+- Type-safe feature flag definitions with default values
+
+**Advanced Offline Mode:**
+For more advanced offline scenarios and bootstrap capabilities, please refer to the [FeatBit .NET Server SDK documentation](https://github.com/featbit/featbit-dotnet-sdk) or contact FeatBit official support.
 
 ### Observability Architecture
 
@@ -519,5 +525,5 @@ See [LICENSE](LICENSE) for details.
 ## Support
 
 - Documentation: [FeatBit Documentation](https://docs.featbit.co)
-- Issues: [GitHub Issues](https://github.com/featbit/featbit-mcp/issues)
-- Community: [FeatBit Slack](https://join.slack.com/t/featbit/shared_invite/...)
+- Issues: [GitHub Issues](https://github.com/featbit/featbit/issues)
+- Community: [FeatBit Slack](https://join.slack.com/t/featbit/shared_invite/zt-1ew5e2vbb-x6Apan1xZOaYMnFzqZkGNQ)
