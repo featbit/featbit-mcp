@@ -32,11 +32,11 @@ public class AiChatClientFactory
         var provider = configuration["AI:Provider"] ?? "auto-detected";
         logger.LogInformation("AI chat client initialized successfully using provider: {Provider}", provider);
         
-        // Wrap the chat client with custom OpenTelemetry middleware and logging
-        // Custom middleware manually records all prompts, responses, tokens, and function calls
+        // Wrap with middleware for logging and OpenTelemetry
+        // Environment variable OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true enables message content capture
         chatClient = chatClient
             .AsBuilder()
-            .Use(innerClient => new ChatClientOpenTelemetryMiddleware(innerClient, logger))
+            .Use(innerClient => new ChatClientOpenTelemetryMiddleware(innerClient))
             .UseLogging(loggerFactory)
             .Build();
         
@@ -59,7 +59,7 @@ public class AiChatClientFactory
     private static IChatClient? CreateOpenAIChatClient(IConfiguration configuration, ILogger logger)
     {
         var apiKey = configuration["AI:OpenAI:ApiKey"];
-        var model = configuration["AI:OpenAI:Model"] ?? "gpt-4o-mini";
+        var model = configuration["AI:OpenAI:Model"] ?? "gpt-5.1";
 
         if (string.IsNullOrEmpty(apiKey))
         {

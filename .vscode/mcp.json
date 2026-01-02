@@ -1,9 +1,5 @@
 {
   "servers": {
-    "FeatBitMcpServer": {
-      "type": "http",
-      "url": "http://localhost:5180"
-    },
     "aspire-dashboard": {
       "type": "http",
       "url": "http://localhost:18202/mcp",
@@ -11,9 +7,9 @@
         "x-mcp-api-key": "1f5c70951bc93f744b1ebc1bdc329285"
       }
     },
-    "featbit-mcp":{
+    "featbit-mcp": {
       "type": "http",
-      "url": "http://localhost:5180/mcp",
+      "url": "http://localhost:5180/mcp"
     }
   }
 }

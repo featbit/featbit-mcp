@@ -27,57 +27,48 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
         _sessionContext = sessionContext;
     }
 
-    /// <inheritdoc />
-    public bool ReleaseEnabled(FeatureFlag flag)
+    /// <summary>
+    /// Creates and configures an Activity for feature flag evaluation with all standard tags.
+    /// </summary>
+    private Activity? CreateFeatureFlagActivity(FeatureFlag flag, string operationType, out bool result)
     {
-        using var activity = ActivitySource.StartActivity(
-            $"FeatureFlag.Evaluate: {flag.Key}",
-            ActivityKind.Server);
+        var activity = ActivitySource.StartActivity(
+            $"FeatureFlag.{operationType}: {flag.Key}",
+            ActivityKind.Client);
         
-        // Create user from session context
+        // FeatBit is a remote service - set peer.service and server.address
+        activity?.SetTag("peer.service", "featbit");
+        activity?.SetTag("server.address", "app-eval.featbit.co");
+        
         var user = FbUser.Builder(_sessionContext.SessionId).Build();
-        
-        // Add color hint for visualization tools
-        // activity?.SetTag("display.color", "purple");
-        // activity?.SetTag("ui.color", "#9C27B0");
-        // activity?.SetTag("span.category", "feature_flag");
         
         activity?.SetTag("feature_flag.key", flag.Key);
         activity?.SetTag("feature_flag.default_value", flag.DefaultValue);
         activity?.SetTag("feature_flag.user.key", user.Key);
         
-        var result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
+        result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
         
         activity?.SetTag("feature_flag.result", result);
         activity?.SetTag("feature_flag.description", flag.Description);
         
+        return activity;
+    }
+
+    /// <inheritdoc />
+    public bool ReleaseEnabled(FeatureFlag flag)
+    {
+        using var activity = CreateFeatureFlagActivity(flag, "Evaluate", out var result);
         return result;
     }
 
     /// <inheritdoc />
     public void ReleaseEnabledThen(FeatureFlag flag, Action action)
     {
-        using var activity = ActivitySource.StartActivity(
-            $"FeatureFlag.Guard: {flag.Key}",
-            ActivityKind.Server);
-        
-        // Create user from session context
-        var user = FbUser.Builder(_sessionContext.SessionId).Build();
-        
-        activity?.SetTag("feature_flag.key", flag.Key);
-        activity?.SetTag("feature_flag.default_value", flag.DefaultValue);
-        activity?.SetTag("feature_flag.user.key", user.Key);
-        
-        var result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
-        
-        activity?.SetTag("feature_flag.result", result);
-        activity?.SetTag("feature_flag.description", flag.Description);
+        using var activity = CreateFeatureFlagActivity(flag, "Guard", out var result);
         
         if (result)
         {
             activity?.AddEvent(new ActivityEvent("Flag enabled, executing action"));
-            
-            // Execute the action - this will create its own child span if it has instrumentation
             action();
         }
         else
@@ -90,29 +81,12 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
     /// <inheritdoc />
     public T ReleaseEnabledThen<T>(FeatureFlag flag, Func<T> func, T defaultValue)
     {
-        using var activity = ActivitySource.StartActivity(
-            $"FeatureFlag.Guard: {flag.Key}",
-            ActivityKind.Server);
-        
-        // Create user from session context
-        var user = FbUser.Builder(_sessionContext.SessionId).Build();
-        
-        activity?.SetTag("feature_flag.key", flag.Key);
-        activity?.SetTag("feature_flag.default_value", flag.DefaultValue);
-        activity?.SetTag("feature_flag.user.key", user.Key);
-        
-        var result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
-        
-        activity?.SetTag("feature_flag.result", result);
-        activity?.SetTag("feature_flag.description", flag.Description);
+        using var activity = CreateFeatureFlagActivity(flag, "Guard", out var result);
         
         if (result)
         {
             activity?.AddEvent(new ActivityEvent("Flag enabled, executing function"));
-            
-            // Execute the function - this will create its own child span if it has instrumentation
             var funcResult = func();
-            
             activity?.SetTag("feature_flag.execution.completed", true);
             return funcResult;
         }
@@ -121,7 +95,6 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
             activity?.AddEvent(new ActivityEvent("Flag disabled, returning default value"));
             activity?.SetTag("feature_flag.execution.completed", false);
             _logger.LogDebug("Feature flag {FlagKey} is disabled, returning default value", flag.Key);
-            
             return defaultValue;
         }
     }
@@ -135,29 +108,12 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
     /// <inheritdoc />
     public async Task ReleaseEnabledThenAsync(FeatureFlag flag, Func<Task> asyncAction)
     {
-        using var activity = ActivitySource.StartActivity(
-            $"FeatureFlag.Guard: {flag.Key}",
-            ActivityKind.Server);
-        
-        // Create user from session context
-        var user = FbUser.Builder(_sessionContext.SessionId).Build();
-        
-        activity?.SetTag("feature_flag.key", flag.Key);
-        activity?.SetTag("feature_flag.default_value", flag.DefaultValue);
-        activity?.SetTag("feature_flag.user.key", user.Key);
-        
-        var result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
-        
-        activity?.SetTag("feature_flag.result", result);
-        activity?.SetTag("feature_flag.description", flag.Description);
+        using var activity = CreateFeatureFlagActivity(flag, "Guard", out var result);
         
         if (result)
         {
             activity?.AddEvent(new ActivityEvent("Flag enabled, executing async action"));
-            
-            // Execute the async action - this will create its own child span if it has instrumentation
             await asyncAction();
-            
             activity?.SetTag("feature_flag.execution.completed", true);
         }
         else
@@ -171,29 +127,12 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
     /// <inheritdoc />
     public async Task<T> ReleaseEnabledThenAsync<T>(FeatureFlag flag, Func<Task<T>> asyncFunc, T defaultValue)
     {
-        using var activity = ActivitySource.StartActivity(
-            $"FeatureFlag.Guard: {flag.Key}",
-            ActivityKind.Server);
-        
-        // Create user from session context
-        var user = FbUser.Builder(_sessionContext.SessionId).Build();
-        
-        activity?.SetTag("feature_flag.key", flag.Key);
-        activity?.SetTag("feature_flag.default_value", flag.DefaultValue);
-        activity?.SetTag("feature_flag.user.key", user.Key);
-        
-        var result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
-        
-        activity?.SetTag("feature_flag.result", result);
-        activity?.SetTag("feature_flag.description", flag.Description);
+        using var activity = CreateFeatureFlagActivity(flag, "Guard", out var result);
         
         if (result)
         {
             activity?.AddEvent(new ActivityEvent("Flag enabled, executing async function"));
-            
-            // Execute the async function - this will create its own child span if it has instrumentation
             var funcResult = await asyncFunc();
-            
             activity?.SetTag("feature_flag.execution.completed", true);
             return funcResult;
         }
@@ -202,7 +141,6 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
             activity?.AddEvent(new ActivityEvent("Flag disabled, returning default value"));
             activity?.SetTag("feature_flag.execution.completed", false);
             _logger.LogDebug("Feature flag {FlagKey} is disabled, returning default value", flag.Key);
-            
             return defaultValue;
         }
     }

@@ -5,19 +5,13 @@ using Microsoft.Extensions.AI;
 namespace FeatBit.McpServer.Infrastructure;
 
 /// <summary>
-/// Custom OpenTelemetry middleware that manually records AI chat interactions with full details.
-/// Records: system prompts, user prompts, responses, token usage, and function calls.
+/// OpenTelemetry middleware for IChatClient that records GenAI semantic conventions.
+/// This ensures complete telemetry including assistant responses in Aspire Dashboard.
+/// Uses the OpenTelemetry GenAI semantic conventions format expected by Aspire.
 /// </summary>
-public class ChatClientOpenTelemetryMiddleware : DelegatingChatClient
+public class ChatClientOpenTelemetryMiddleware(IChatClient innerClient) : DelegatingChatClient(innerClient)
 {
     private static readonly ActivitySource ActivitySource = new("Microsoft.Extensions.AI");
-    private readonly ILogger _logger;
-
-    public ChatClientOpenTelemetryMiddleware(IChatClient innerClient, ILogger logger) 
-        : base(innerClient)
-    {
-        _logger = logger;
-    }
 
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> chatMessages,
@@ -28,175 +22,92 @@ public class ChatClientOpenTelemetryMiddleware : DelegatingChatClient
         
         if (activity != null)
         {
+            var messagesList = chatMessages.ToList();
+            
+            // Set GenAI semantic convention attributes
+            activity.SetTag("gen_ai.system", "azure_openai");
+            activity.SetTag("gen_ai.operation.name", "chat");
+            
+            // Capture input messages in OpenTelemetry GenAI format
+            if (ShouldCaptureContent())
+            {
+                var inputMessages = messagesList.Select(m => new
+                {
+                    role = m.Role.Value,
+                    parts = new[]
+                    {
+                        new
+                        {
+                            type = "text",
+                            content = m.Text ?? string.Empty
+                        }
+                    }
+                }).ToArray();
+                
+                var inputJson = JsonSerializer.Serialize(inputMessages);
+                activity.SetTag("gen_ai.input.messages", inputJson);
+            }
+
             try
             {
-                // Record model and provider
-                var modelId = options?.ModelId ?? "unknown";
-                activity.SetTag("gen_ai.request.model", modelId);
-                activity.SetTag("gen_ai.system", DetermineProvider(modelId));
-
-                // Record chat options
-                if (options != null)
+                var response = await base.GetResponseAsync(messagesList, options, cancellationToken);
+                
+                // Set model ID from response (more reliable than options)
+                if (!string.IsNullOrEmpty(response.ModelId))
                 {
-                    if (options.Temperature.HasValue)
-                        activity.SetTag("gen_ai.request.temperature", options.Temperature.Value);
-                    
-                    if (options.MaxOutputTokens.HasValue)
-                        activity.SetTag("gen_ai.request.max_tokens", options.MaxOutputTokens.Value);
-                    
-                    if (options.TopP.HasValue)
-                        activity.SetTag("gen_ai.request.top_p", options.TopP.Value);
-                    
-                    if (options.FrequencyPenalty.HasValue)
-                        activity.SetTag("gen_ai.request.frequency_penalty", options.FrequencyPenalty.Value);
-                    
-                    if (options.PresencePenalty.HasValue)
-                        activity.SetTag("gen_ai.request.presence_penalty", options.PresencePenalty.Value);
-                    
-                    if (options.ResponseFormat != null)
-                        activity.SetTag("gen_ai.request.response_format", options.ResponseFormat.ToString());
+                    activity.SetTag("gen_ai.request.model", response.ModelId);
+                    activity.SetTag("gen_ai.response.model", response.ModelId);
                 }
-
-                // Record all messages (prompts)
-                var messagesList = chatMessages.ToList();
-                for (int i = 0; i < messagesList.Count; i++)
+                
+                // Capture response in OpenTelemetry GenAI format
+                if (ShouldCaptureContent() && !string.IsNullOrEmpty(response.Text))
                 {
-                    var message = messagesList[i];
-                    activity.SetTag($"gen_ai.prompt.{i}.role", message.Role.Value);
-                    
-                    // Record the actual content
-                    var contentText = GetMessageContent(message);
-                    if (!string.IsNullOrEmpty(contentText))
+                    var outputMessages = new[]
                     {
-                        activity.SetTag($"gen_ai.prompt.{i}.content", contentText);
-                    }
-
-                    // Record function calls if present
-                    if (message.Contents != null)
-                    {
-                        var functionCalls = message.Contents
-                            .OfType<FunctionCallContent>()
-                            .ToList();
-
-                        for (int j = 0; j < functionCalls.Count; j++)
+                        new
                         {
-                            var call = functionCalls[j];
-                            activity.SetTag($"gen_ai.prompt.{i}.function_call.{j}.name", call.Name);
-                            
-                            if (call.Arguments != null)
+                            role = "assistant",
+                            parts = new[]
                             {
-                                var argsJson = JsonSerializer.Serialize(call.Arguments);
-                                activity.SetTag($"gen_ai.prompt.{i}.function_call.{j}.arguments", argsJson);
-                            }
+                                new
+                                {
+                                    type = "text",
+                                    content = response.Text
+                                }
+                            },
+                            finish_reason = response.FinishReason.ToString()
                         }
-                    }
-                }
-
-                activity.SetTag("gen_ai.prompt.count", messagesList.Count);
-
-                // Call the inner client
-                var response = await base.GetResponseAsync(chatMessages, options, cancellationToken);
-
-                // Record response
-                if (response != null)
-                {
-                    // Extract text content from response
-                    var responseText = response.ToString();
-                    if (!string.IsNullOrEmpty(responseText))
-                    {
-                        activity.SetTag("gen_ai.response.0.role", "assistant");
-                        activity.SetTag("gen_ai.response.0.content", responseText);
-                    }
-
-                    // Try to get additional metadata using reflection (since ChatResponse doesn't expose these publicly)
-                    var responseType = response.GetType();
+                    };
                     
-                    // Try to get Usage details
-                    var usageProp = responseType.GetProperty("Usage");
-                    if (usageProp != null)
-                    {
-                        var usage = usageProp.GetValue(response) as UsageDetails;
-                        if (usage != null)
-                        {
-                            if (usage.InputTokenCount.HasValue)
-                                activity.SetTag("gen_ai.usage.input_tokens", usage.InputTokenCount.Value);
-                            
-                            if (usage.OutputTokenCount.HasValue)
-                                activity.SetTag("gen_ai.usage.output_tokens", usage.OutputTokenCount.Value);
-                            
-                            if (usage.TotalTokenCount.HasValue)
-                                activity.SetTag("gen_ai.usage.total_tokens", usage.TotalTokenCount.Value);
-                        }
-                    }
-
-                    // Try to get FinishReason
-                    var finishReasonProp = responseType.GetProperty("FinishReason");
-                    if (finishReasonProp != null)
-                    {
-                        var finishReason = finishReasonProp.GetValue(response);
-                        if (finishReason != null)
-                        {
-                            activity.SetTag("gen_ai.response.finish_reason", finishReason.ToString());
-                        }
-                    }
+                    var outputJson = JsonSerializer.Serialize(outputMessages);
+                    activity.SetTag("gen_ai.output.messages", outputJson);
                 }
-
+                
+                // Capture usage information
+                if (response?.Usage != null)
+                {
+                    activity.SetTag("gen_ai.usage.input_tokens", response.Usage.InputTokenCount);
+                    activity.SetTag("gen_ai.usage.output_tokens", response.Usage.OutputTokenCount);
+                    activity.SetTag("gen_ai.usage.total_tokens", response.Usage.TotalTokenCount);
+                }
+                
                 activity.SetStatus(ActivityStatusCode.Ok);
-                return response!;
+                return response;
             }
             catch (Exception ex)
             {
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                
-                // Manually record exception details
-                if (activity != null)
-                {
-                    activity.SetTag("exception.type", ex.GetType().FullName);
-                    activity.SetTag("exception.message", ex.Message);
-                    activity.SetTag("exception.stacktrace", ex.StackTrace);
-                }
-                
+                activity.SetStatus(ActivityStatusCode.Error, ex.Message);
                 throw;
             }
         }
-        else
-        {
-            // Fallback if activity creation fails
-            return await base.GetResponseAsync(chatMessages, options, cancellationToken);
-        }
+
+        return await base.GetResponseAsync(chatMessages, options, cancellationToken);
     }
 
-    private static string GetMessageContent(ChatMessage message)
+    private static bool ShouldCaptureContent()
     {
-        if (message.Text != null)
-        {
-            return message.Text;
-        }
-
-        if (message.Contents != null)
-        {
-            var textContents = message.Contents
-                .OfType<TextContent>()
-                .Select(c => c.Text)
-                .Where(t => !string.IsNullOrEmpty(t));
-            
-            return string.Join("\n", textContents);
-        }
-
-        return string.Empty;
-    }
-
-    private static string DetermineProvider(string modelId)
-    {
-        if (modelId.Contains("gpt", StringComparison.OrdinalIgnoreCase))
-            return "openai";
-        
-        if (modelId.Contains("claude", StringComparison.OrdinalIgnoreCase))
-            return "anthropic";
-        
-        if (modelId.Contains("gemini", StringComparison.OrdinalIgnoreCase))
-            return "google";
-        
-        return "unknown";
+        // Check environment variable for content capture
+        var envVar = Environment.GetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT");
+        return string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase);
     }
 }
