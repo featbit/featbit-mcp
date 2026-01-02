@@ -71,6 +71,16 @@ public class DocService
         }
         var urls = await SelectBestUrlsAsync(topic, section, cancellationToken);
 
+        // Check feature flag when no URLs are found
+        if (_featureFlag.ReleaseEnabled(FeatureFlag.DocNotFound))
+        {
+            if (!urls.Any())
+            {
+                _logger.LogInformation("Returning suggestion message due to doc-not-found feature flag");
+                return new List<string> { "Please try with other prompt" };
+            }
+        }
+
         return urls;
     }
 
@@ -258,14 +268,7 @@ public class DocService
         }
 
         _logger.LogWarning("No URLs selected by AI");
-        
-        // Check feature flag when no URLs are found
-        if (_featureFlag.ReleaseEnabled(FeatureFlag.DocNotFound))
-        {
-            _logger.LogInformation("Returning suggestion message due to doc-not-found feature flag");
-            return new List<string> { "Please try with other prompt" };
-        }
-        
+
         return new List<string>();
     }
 }

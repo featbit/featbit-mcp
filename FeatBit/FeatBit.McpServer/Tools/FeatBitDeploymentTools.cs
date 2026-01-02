@@ -1,9 +1,7 @@
-using System.ComponentModel;
-using FeatBit.McpServer.FeatureFlags;
 using FeatBit.McpServer.Services;
-using FeatBit.Sdk.Server;
-using FeatBit.Sdk.Server.Model;
 using ModelContextProtocol.Server;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace FeatBit.McpServer.Tools;
 
@@ -14,10 +12,10 @@ namespace FeatBit.McpServer.Tools;
 /// </summary>
 [McpServerToolType]
 public class FeatBitDeploymentTools(
-    IFbClient fbClient,
     DeploymentService deploymentService,
     ILogger<FeatBitDeploymentTools> logger)
 {
+    private static readonly ActivitySource ActivitySource = new("FeatBit.McpTools");
     [McpServerTool]
     [Description("Only call when user explicitly asks about deployment of FeatBit, provide step-by-step deployment tutorials for various platforms and scenarios. This tool will help users deploy FeatBit efficiently. User must specify what method they use, where they want to deploy, and what topic they want to learn about.")]
     public async Task<string> HowToDeploy(
@@ -28,21 +26,11 @@ public class FeatBitDeploymentTools(
         [Description("Describe the specific deployment topic you want to learn.")]
         string topic)
     {
-        // Check feature flag before executing
-        var user = FbUser.Builder("mcp-server")
-            .Custom("tool", "HowToDeploy")
-            .Custom("method", method)
-            .Custom("platform", whereToDeploy)
-            .Build();
-        
-        var flag = FeatureFlag.EnableDeploymentTool;
-        var isEnabled = fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
-        
-        if (!isEnabled)
-        {
-            logger.LogWarning("MCP Tool Disabled: HowToDeploy is disabled by feature flag");
-            return "This feature is currently disabled. Please contact your administrator.";
-        }
+        using var activity = ActivitySource.StartActivity("McpTool.HowToDeploy");
+        activity?.SetTag("mcp.tool.name", "HowToDeploy");
+        activity?.SetTag("mcp.tool.parameter.method", method);
+        activity?.SetTag("mcp.tool.parameter.whereToDeploy", whereToDeploy);
+        activity?.SetTag("mcp.tool.parameter.topic", topic);
         
         logger.LogInformation("MCP Tool Called: HowToDeploy for method={Method}, platform={Platform}, topic={Topic}", 
             method, whereToDeploy, topic);
@@ -53,7 +41,8 @@ public class FeatBitDeploymentTools(
             whereToDeploy, 
             topic);
         
+        activity?.SetTag("mcp.tool.result.length", documentation?.Length ?? 0);
         logger.LogInformation("MCP Tool Result: HowToDeploy completed successfully");
-        return documentation;
+        return documentation ?? string.Empty;
     }
 }

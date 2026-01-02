@@ -63,6 +63,8 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
+                    .AddSource("FeatBit.FeatureFlags")
+                    .AddSource("FeatBit.McpTools")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>

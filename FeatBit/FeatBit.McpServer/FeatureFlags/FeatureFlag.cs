@@ -19,20 +19,10 @@ namespace FeatBit.McpServer.FeatureFlags;
 /// <param name="Description">Human-readable description of what this flag controls</param>
 public sealed record FeatureFlag(string Key, bool DefaultValue, string Description)
 {
-    public static readonly FeatureFlag EnableDeploymentTool = new(
-        Key: "enable-deployment-tool",
-        DefaultValue: true,
-        Description: "Controls whether the deployment tool is enabled"
-    );
-    public static readonly FeatureFlag EnableSdkTool = new(
-        Key: "enable-sdk-tool",
-        DefaultValue: true,
-        Description: "Controls whether the SDK integration code generation tool is enabled"
-    );
     
     public static readonly FeatureFlag DocNotFound = new(
         Key: "doc-not-found",
-        DefaultValue: false,
+        DefaultValue: true,
         Description: "Controls whether to return a suggestion message when no documentation is found"
     );
 }

@@ -31,7 +31,8 @@ builder.Services.AddAiChatClient(builder.Configuration);
 // Add HttpContextAccessor to access HTTP request information
 builder.Services.AddHttpContextAccessor();
 
-// Session context - provides session ID from MCP headers or OpenTelemetry trace
+// Session context - provides unique ID per request for feature flag user context
+// Note: Separate from MCP's internal session management
 builder.Services.AddScoped<ISessionContext, SessionContext>();
 
 // Document loader service - abstraction for loading documents from various sources
@@ -42,16 +43,18 @@ builder.Services.AddSingleton<IDocumentLoader, ResourcesDocumentLoader>();
 builder.Services.AddSingleton<IClaudeSkillsMarkdownParser, ClaudeSkillsMarkdownParser>();
 
 // Feature flag evaluator with OpenTelemetry tracing support
-builder.Services.AddSingleton<IFeatureFlagEvaluator, FeatureFlagEvaluator>();
+// Scoped lifetime because it depends on ISessionContext (which is scoped per request)
+builder.Services.AddScoped<IFeatureFlagEvaluator, FeatureFlagEvaluator>();
 
 // Deployment service for routing and selecting deployment documentation
-builder.Services.AddSingleton<DeploymentService>();
+builder.Services.AddScoped<DeploymentService>();
 
 // SDK service for routing and selecting SDK documentation
-builder.Services.AddSingleton<SdkService>();
+builder.Services.AddScoped<SdkService>();
 
 // Documentation service for routing questions to documentation URLs
-builder.Services.AddSingleton<DocService>();
+// Scoped lifetime because it depends on IFeatureFlagEvaluator (which is scoped per request)
+builder.Services.AddScoped<DocService>();
 
 // ========================================
 // Register SDK Services

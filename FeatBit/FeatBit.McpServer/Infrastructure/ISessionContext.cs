@@ -6,7 +6,8 @@ namespace FeatBit.McpServer.Infrastructure;
 public interface ISessionContext
 {
     /// <summary>
-    /// Gets the current session ID from MCP headers, OpenTelemetry trace, or generates a fallback.
+    /// Gets the current session ID from OpenTelemetry trace or generates a unique ID per request.
+    /// Used for feature flag user context, not MCP protocol session management.
     /// </summary>
     string SessionId { get; }
 }
