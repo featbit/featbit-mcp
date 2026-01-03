@@ -72,9 +72,11 @@ jobs:
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
     
     - name: Pack NuGet package
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release --output ./nuget-packages --no-build
     
     - name: Upload NuGet artifact
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v4
       with:
         name: nuget-package
