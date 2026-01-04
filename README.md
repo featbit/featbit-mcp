@@ -30,53 +30,24 @@ That's it! You're ready to use FeatBit MCP server.
 
 ---
 
-## Table of Contents
+### What Problems Does This Solve?
 
-- [Quick Start](#quick-start)
-- [What's This Project For](#whats-this-project-for)
-- [How to Run Locally](#how-to-run-locally)
-- [How to Build and Release](#how-to-build-and-release)
-- [Architecture & Design Patterns](#architecture--design-patterns)
+This MCP server enables AI coding agents (like GitHub Copilot) to help developers with FeatBit feature flag management through natural language interactions. The server exposes three main MCP tools to solve these problems:
 
----
+1. **SDK Integration Code Generation** (`generate_integration_code` tool)
+   - Generate integration code for multiple SDKs (.NET, JavaScript/TypeScript, Java, Python, Go, OpenFeature)
+   - Provides best practices and working examples tailored to specific use cases
+   - Helps developers quickly integrate FeatBit into their applications
 
-## What's This Project For
-
-This MCP server enables AI coding agents (like GitHub Copilot) to help developers with FeatBit feature flag management through natural language interactions. The server provides:
-
-### Core Capabilities
-
-1. **Feature Flag Deployment Assistance**
+2. **Feature Flag Deployment Assistance** (`how_to_deploy` tool)
    - Step-by-step deployment guides for various platforms (Kubernetes, Azure, AWS, GCP, on-premise)
    - Support for different deployment methods (Helm, Docker Compose, Terraform, etc.)
+   - Simplifies the FeatBit deployment process across different environments
 
-2. **SDK Integration Code Generation**
-   - Generate integration code for multiple SDKs:
-     - .NET (Server, Console, Client)
-     - JavaScript/TypeScript (Client, React, React Native, Node.js)
-     - Java SDK
-     - Python SDK
-     - Go SDK
-     - OpenFeature integrations
-   - Provides best practices and working examples tailored to specific use cases
-
-3. **Documentation Search & Troubleshooting**
-   - Intelligent document routing using AI and RAG (Retrieval-Augmented Generation)
-   - Quick access to relevant FeatBit documentation
-   - Troubleshooting guidance for common issues
-
-4. **Bootstrap Mode Support**
-   - Offline operation with local JSON file fallback
-   - Useful when FeatBit server is unavailable or for testing
-
-### Key Features
-
-- **AI-Powered**: Uses Microsoft Extensions AI with Azure OpenAI integration
-- **Feature Flag Controlled**: Uses FeatBit's own SDK to control server behavior (dogfooding)
-- **Observable**: Full OpenTelemetry integration for logging, tracing, and metrics
-- **Cloud-Native**: Built with .NET Aspire for modern distributed application development
-
----
+3. **Documentation Search & Troubleshooting** (`search_documentation` tool)
+   - Intelligent document routing using AI and RAG for quick access to relevant FeatBit documentation
+   - Provides troubleshooting guidance for common issues
+   - Helps developers find answers without leaving their coding environment
 
 ## How to Run Locally
 
@@ -94,21 +65,7 @@ This MCP server enables AI coding agents (like GitHub Copilot) to help developer
    cd featbit-mcp
    ```
 
-2. **Configure FeatBit Connection** (Optional - for online mode)
-   
-   Edit [FeatBit/FeatBit.McpServer/appsettings.Development.json](FeatBit/FeatBit.McpServer/appsettings.Development.json):
-   ```json
-   {
-     "FeatBit": {
-       "EnvSecret": "your-environment-secret",
-       "StreamingUri": "wss://app-eval.featbit.co",
-       "EventUri": "https://app-eval.featbit.co",
-       "StartWaitTimeSeconds": 3
-     }
-   }
-   ```
-
-3. **Configure AI Provider** (Azure OpenAI Only)
+2. **Configure AI Provider** (Azure OpenAI Only)
    
    Edit the same file to add your Azure OpenAI configuration:
    ```json
@@ -125,6 +82,10 @@ This MCP server enables AI coding agents (like GitHub Copilot) to help developer
    ```
    
    > **Note**: Currently, only Azure OpenAI is supported as the AI provider.
+
+3. **Configure FeatBit SDK** (Optional for Online Mode)
+    
+> **Note**: The server can run with or without FeatBit connection configured. Without FeatBit connection, it uses default values from [FeatureFlag.cs](FeatBit/FeatBit.FeatureFlags/FeatureFlag.cs) for all feature flags. To enable dynamic feature flag control, configure the FeatBit connection in the Configuration section above.
 
 ### Running Options
 
@@ -174,27 +135,7 @@ Configure your MCP client to connect to the hosted FeatBit MCP server:
 }
 ```
 
-**Option 2: Run Locally via STDIO**
-
-Configure your MCP client to run the server locally:
-
-```json
-{
-  "servers": {
-    "FeatBitMcpServer": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "c:/Code/featbit/featbit-mcp/FeatBit/FeatBit.McpServer"
-      ]
-    }
-  }
-}
-```
-
-**Option 3: Connect to Local HTTP Server**
+**Option 2: Connect to Local HTTP Server**
 
 If you're running the server locally via HTTP:
 
@@ -229,99 +170,6 @@ Or use the included [Postman collection](FeatBit/Postman/FeatBit-MCP-Server.post
 
 ---
 
-## How to Build and Release
-
-### Building for Release
-
-#### Build as NuGet Package
-
-```bash
-cd FeatBit/FeatBit.McpServer
-dotnet pack -c Release
-```
-
-The package will be created in `bin/Release/FeatBit.McpServer.{version}.nupkg`
-
-#### Build for Specific Platforms
-
-The project is configured to build self-contained executables for multiple platforms:
-- `win-x64`, `win-arm64`
-- `osx-arm64`
-- `linux-x64`, `linux-arm64`, `linux-musl-x64`
-
-To build for a specific platform:
-
-```bash
-dotnet publish -c Release -r win-x64 --self-contained
-```
-
-The output will be in `bin/Release/net10.0/win-x64/publish/`
-
-### Release Process
-
-#### 1. Update Version
-
-Edit [FeatBit.McpServer.csproj](FeatBit/FeatBit.McpServer/FeatBit.McpServer.csproj):
-
-```xml
-<PackageVersion>0.2.0-beta</PackageVersion>
-```
-
-#### 2. Update Package Metadata
-
-Ensure all metadata is correct in the `.csproj` file:
-- `<PackageId>`
-- `<Description>`
-- `<PackageTags>`
-- `<PackageReadmeFile>`
-
-#### 3. Build and Test
-
-```bash
-dotnet build -c Release
-dotnet test -c Release
-```
-
-#### 4. Create NuGet Package
-
-```bash
-dotnet pack -c Release
-```
-
-#### 5. Publish to NuGet.org
-
-```bash
-dotnet nuget push bin/Release/*.nupkg \
-  --api-key <your-api-key> \
-  --source https://api.nuget.org/v3/index.json
-```
-
-#### 6. Create GitHub Release
-
-```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
-
-Create a release on GitHub with release notes and attach the platform-specific binaries.
-
-### Using the Published MCP Server
-
-Once published to NuGet.org, users can reference it in their MCP configuration:
-
-```json
-{
-  "servers": {
-    "FeatBitMcpServer": {
-      "type": "nuget",
-      "package": "FeatBit.McpServer",
-      "version": "0.2.0-beta"
-    }
-  }
-}
-```
-
----
 
 ## Architecture & Design Patterns
 
