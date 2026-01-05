@@ -72,9 +72,9 @@ public class DocService
         var urls = await SelectBestUrlsAsync(topic, section, cancellationToken);
 
         // Use feature flag to guard the URL selection process
-        urls = await _featureFlag.ReleaseEnabledThenAsync(
-            FeatureFlag.DocNotFound,
-            async () => await SelectBestUrlsAsync(topic, section, cancellationToken));
+        // urls = await _featureFlag.ReleaseEnabledThenAsync(
+        //     FeatureFlag.DocNotFound,
+        //     async () => await SelectBestUrlsAsync(topic, section, cancellationToken));
 
         return urls;
     }

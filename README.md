@@ -2,18 +2,16 @@
 
 A Model Context Protocol (MCP) server that enables AI coding agents to interact with FeatBit feature flag management. Built with .NET 10, ASP.NET Core, and Aspire for modern cloud-native architecture.
 
-## Quick Start
+## 🔌 Installation & Getting Started
 
-Get started immediately by connecting to our hosted MCP server - no installation required!
+The FeatBit MCP Server supports quick installation across multiple development environments. Choose your preferred client below:
 
-### Connect to Hosted MCP Server
-
-Add this configuration to your VS Code MCP settings (`.vscode/mcp.json`):
+Standard config works in most clients:
 
 ```json
 {
   "servers": {
-    "featbit-mcp-remote": {
+    "featbit": {
       "type": "http",
       "url": "https://mcp.featbit.co/mcp"
     }
@@ -21,12 +19,69 @@ Add this configuration to your VS Code MCP settings (`.vscode/mcp.json`):
 }
 ```
 
-Then ask your AI assistant questions like:
-- "How do I integrate FeatBit .NET SDK in my ASP.NET Core project?"
-- "Show me how to deploy FeatBit to Kubernetes using Helm"
-- "What's the best way to use feature flags in React?"
+#### VS Code
 
-That's it! You're ready to use FeatBit MCP server.
+Install in VS Code or search "@mcp featbit" in Extensions, or manually add to `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "featbit": {
+      "type": "http",
+      "url": "https://mcp.featbit.co/mcp"
+    }
+  }
+}
+```
+
+[VS Code MCP Guide](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server)
+
+#### Cursor
+
+Add to Cursor MCP settings (`~/.cursor/mcp.json` on macOS/Linux or `%APPDATA%\.cursor\mcp.json` on Windows):
+
+```json
+{
+  "servers": {
+    "featbit": {
+      "url": "https://mcp.featbit.co/mcp"
+    }
+  }
+}
+```
+
+[Cursor MCP Guide](https://cursor.com/docs/context/mcp#using-mcpjson)
+
+#### Claude Code
+
+Run the following command:
+
+```bash
+claude mcp add --transport http featbit https://mcp.featbit.co/mcp
+```
+
+[Claude Code MCP Guide](https://code.claude.com/docs/en/mcp#option-1%3A-add-a-remote-http-server)
+
+#### Codex
+
+Run the following command:
+
+```bash
+codex mcp add "featbit" --url "https://mcp.featbit.co/mcp"
+```
+
+[Codex MCP documentation](https://developers.openai.com/codex/mcp/#connect-codex-to-an-mcp-server)
+
+### ▶️ Getting Started
+
+1. Install the FeatBit MCP Server using one of the methods above
+2. You should see the FeatBit MCP Server in the list of available tools
+3. Try a prompt like:
+   - "How do I integrate FeatBit .NET SDK in my ASP.NET Core project?"
+   - "Show me how to deploy FeatBit to Kubernetes using Helm"
+   - "What's the best way to use feature flags in React?"
+
+That's it! Your AI assistant will now have access to FeatBit documentation and integration guides.
 
 ---
 
@@ -118,16 +173,14 @@ Press `Ctrl+Shift+P` → "Tasks: Run Task" → Select a task
 
 ### Testing the MCP Server
 
-#### From VS Code or GitHub Copilot
+#### Connect to Hosted Server (Recommended)
 
-**Option 1: Connect to Hosted MCP Server** (Recommended)
-
-Configure your MCP client to connect to the hosted FeatBit MCP server:
+Use the standard configuration to connect to the hosted FeatBit MCP server:
 
 ```json
 {
   "servers": {
-    "featbit-mcp-remote": {
+    "featbit": {
       "type": "http",
       "url": "https://mcp.featbit.co/mcp"
     }
@@ -135,25 +188,20 @@ Configure your MCP client to connect to the hosted FeatBit MCP server:
 }
 ```
 
-**Option 2: Connect to Local HTTP Server**
+#### Connect to Local Server
 
-If you're running the server locally via HTTP:
+If you're running the server locally, use:
 
 ```json
 {
   "servers": {
-    "featbit-mcp-local": {
+    "featbit-local": {
       "type": "http",
       "url": "http://localhost:5180/mcp"
     }
   }
 }
 ```
-
-Then ask questions like:
-- "How do I integrate FeatBit .NET SDK in my ASP.NET Core project?"
-- "Show me how to deploy FeatBit to Kubernetes using Helm"
-- "What's the best way to use feature flags in React?"
 
 #### Using HTTP API
 

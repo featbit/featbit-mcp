@@ -4,7 +4,7 @@
       "type": "http",
       "url": "http://localhost:18202/mcp",
       "headers": {
-        "x-mcp-api-key": "1f5c70951bc93f744b1ebc1bdc329285"
+        "x-mcp-api-key": "68a3e8daec65d1432867f5996fa70eff"
       }
     },
     "featbit-mcp": {
