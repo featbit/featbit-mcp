@@ -1,6 +1,6 @@
 # FeatBit MCP Server
 
-A Model Context Protocol (MCP) server that enables AI coding agents to interact with FeatBit feature flag management. Built with .NET 10, ASP.NET Core, and Aspire for modern cloud-native architecture.
+A Model Context Protocol (MCP) server that connects AI coding agents directly to FeatBit's REST API for programmatic feature flag management. Built with .NET 10, ASP.NET Core, and Aspire for modern cloud-native architecture.
 
 ## 🔌 Installation & Getting Started
 
@@ -75,34 +75,84 @@ codex mcp add "featbit" --url "https://mcp.featbit.co/mcp"
 ### ▶️ Getting Started
 
 1. Install the FeatBit MCP Server using one of the methods above
-2. You should see the FeatBit MCP Server in the list of available tools
-3. Try a prompt like:
-   - "How do I integrate FeatBit .NET SDK in my ASP.NET Core project?"
-   - "Show me how to deploy FeatBit to Kubernetes using Helm"
-   - "What's the best way to use feature flags in React?"
+2. Configure your FeatBit API credentials (see Configuration section)
+3. You should see the FeatBit MCP Server in the list of available tools
+4. Try a prompt like:
+   - "Create a new FeatBit project called 'Mobile App' with key 'mobile-app'"
+   - "List all my FeatBit projects"
+   - "Create a feature flag called 'new-ui' in environment [envId]"
+   - "Toggle the 'dark-mode' feature flag to enabled"
+   - "Show me the details of the 'checkout-flow' feature flag"
 
-That's it! Your AI assistant will now have access to FeatBit documentation and integration guides.
+That's it! Your AI assistant can now manage FeatBit feature flags directly through the REST API.
 
 ---
 
 ### What Problems Does This Solve?
 
-This MCP server enables AI coding agents (like GitHub Copilot) to help developers with FeatBit feature flag management through natural language interactions. The server exposes three main MCP tools to solve these problems:
+This MCP server enables AI coding agents (like GitHub Copilot) to manage FeatBit feature flags programmatically through natural language interactions. The server provides direct integration with FeatBit's REST API through 9 specialized MCP tools:
 
-1. **SDK Integration Code Generation** (`generate_integration_code` tool)
-   - Generate integration code for multiple SDKs (.NET, JavaScript/TypeScript, Java, Python, Go, OpenFeature)
-   - Provides best practices and working examples tailored to specific use cases
-   - Helps developers quickly integrate FeatBit into their applications
+#### Core Tools (8 Tools)
 
-2. **Feature Flag Deployment Assistance** (`how_to_deploy` tool)
-   - Step-by-step deployment guides for various platforms (Kubernetes, Azure, AWS, GCP, on-premise)
-   - Support for different deployment methods (Helm, Docker Compose, Terraform, etc.)
-   - Simplifies the FeatBit deployment process across different environments
+1. **CreateProject** - Create new FeatBit projects as top-level containers for feature flags
+   - Auto-generates two default environments (Prod and Dev) with credentials
+   - Ideal for setting up new project structures
 
-3. **Documentation Search & Troubleshooting** (`search_documentation` tool)
-   - Intelligent document routing using AI and RAG for quick access to relevant FeatBit documentation
-   - Provides troubleshooting guidance for common issues
-   - Helps developers find answers without leaving their coding environment
+2. **GetProjects** - List all projects in the organization
+   - Returns project details including environments and their credentials
+   - Useful for project discovery and inventory management
+
+3. **GetProject** - Get detailed information about a specific project
+   - Retrieves complete project configuration including all environments
+   - Helps understand existing project setup
+
+4. **CreateEnvironment** - Create new environments within projects
+   - Support for custom environments (Staging, QA, UAT, etc.)
+   - Auto-generates Server Key and Client Key for each environment
+
+5. **CreateFeatureFlag** - Create feature flags with custom variations
+   - Supports boolean, string, number, and JSON variation types
+   - Configure targeting rules and default behaviors
+   - Ideal for new feature rollout setup
+
+6. **GetFeatureFlag** - Retrieve feature flag details
+   - Get current configuration, variations, and targeting rules
+   - Useful for inspecting existing flag configurations
+
+7. **UpdateFeatureFlag** - Update feature flag properties
+   - Modify name, description, variations, or tags
+   - Maintains feature flag lifecycle management
+
+8. **ToggleFeatureFlag** - Enable or disable feature flags quickly
+   - Quick on/off switching for feature control
+   - Supports optional comments for audit trails
+
+#### Advanced Tool (1 Tool)
+
+9. **CallAdvancedApi** - Access any FeatBit REST API endpoint
+   - Covers edge cases and operations not handled by core tools
+   - Supports GET, POST, PUT, PATCH, and DELETE methods
+   - Enables future-proof API access without server updates
+
+### Design Philosophy
+
+The server uses a **hybrid approach** balancing token efficiency with AI usability:
+- **Core tools** provide clear semantics and type safety for common operations
+- **Advanced tool** handles less common API operations dynamically
+- **Total: 9 tools** (~2-3K tokens in context) - minimal context overhead for AI agents
+
+### 📚 Additional Resources
+
+**For FeatBit Knowledge, Best Practices, and Development Skills:**
+
+Use the [featbit/featbit-skills](https://github.com/featbit/featbit-skills) repository as Agent Skills for coding agents. This repository provides:
+- **Best practices** for feature flag management and implementation patterns
+- **Integration guides** for various SDKs and frameworks
+- **Deployment strategies** for different cloud platforms
+- **Troubleshooting guides** and common solutions
+- **Code examples** and real-world use cases
+
+These skills complement the MCP server by providing deeper domain knowledge and coding guidance that AI agents can leverage when helping with FeatBit implementations.
 
 ## How to Run Locally
 
@@ -110,7 +160,10 @@ This MCP server enables AI coding agents (like GitHub Copilot) to help developer
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Visual Studio 2025, VS Code, or JetBrains Rider
-- (Optional) FeatBit account for online mode - get one at [featbit.co](https://featbit.co)
+- FeatBit account and OpenAPI key - get one at [featbit.co](https://featbit.co)
+  - Sign up for a free account
+  - Navigate to Profile → Access tokens → Create token
+  - Copy your OpenAPI key for configuration
 
 ### Configuration
 
@@ -120,7 +173,32 @@ This MCP server enables AI coding agents (like GitHub Copilot) to help developer
    cd featbit-mcp
    ```
 
-2. **Configure AI Provider** (Azure OpenAI Only)
+2. **Configure FeatBit API** (Required)
+   
+   Edit `FeatBit/FeatBit.McpServer/appsettings.json` or set environment variables:
+   ```json
+   {
+     "FeatBitApi": {
+       "BaseUrl": "https://app.featbit.co",
+       "ApiKey": "your-openapi-key-here",
+       "JwtToken": ""
+     }
+   }
+   ```
+   
+   **Authentication Methods** (Choose one):
+   - **OpenAPI Key** (Recommended for MCP servers)
+     - Best for automation and machine-to-machine communication
+     - Set `FeatBitApi:ApiKey` in configuration
+     - No expiration unless revoked
+     - Get your key from FeatBit console: Profile → Access tokens → Create token
+   
+   - **JWT Bearer Token**
+     - For user-scoped operations
+     - Set `FeatBitApi:JwtToken` in configuration
+     - Session-based expiration
+
+3. **Configure AI Provider** (Optional - for advanced features)
    
    Edit the same file to add your Azure OpenAI configuration:
    ```json
@@ -136,11 +214,22 @@ This MCP server enables AI coding agents (like GitHub Copilot) to help developer
    }
    ```
    
-   > **Note**: Currently, only Azure OpenAI is supported as the AI provider.
+   > **Note**: AI provider is optional and used only for advanced document search features. The core REST API tools work without AI configuration.
 
-3. **Configure FeatBit SDK** (Optional for Online Mode)
-    
-> **Note**: The server can run with or without FeatBit connection configured. Without FeatBit connection, it uses default values from [FeatureFlag.cs](FeatBit/FeatBit.FeatureFlags/FeatureFlag.cs) for all feature flags. To enable dynamic feature flag control, configure the FeatBit connection in the Configuration section above.
+4. **Configure FeatBit SDK** (Optional - for feature flagging the MCP server itself)
+   
+   The MCP server can use FeatBit's own feature flags to control its behavior (self-dogfooding):
+   ```json
+   {
+     "FeatBit": {
+       "EnvSecret": "your-environment-secret",
+       "StreamingUri": "wss://app.featbit.co",
+       "EventUri": "https://app.featbit.co"
+     }
+   }
+   ```
+   
+   > **Note**: Without this configuration, the server uses default values from [FeatureFlag.cs](FeatBit/FeatBit.FeatureFlags/FeatureFlag.cs). This is optional and only needed if you want to dynamically control the MCP server's behavior via feature flags.
 
 ### Running Options
 
@@ -238,55 +327,70 @@ FeatBit.sln
 ├── FeatBit.AppHost              # Aspire orchestration host
 ├── FeatBit.McpServer            # Main MCP server application
 │   ├── Controllers/             # (Future: REST controllers)
-│   ├── Domain/                  # Domain models
-│   │   ├── Deployments/        # Deployment-related models
-│   │   ├── Migrations/         # Data migrations
-│   │   └── Sdks/               # SDK-specific models
-│   ├── Extensions/             # Service registration extensions
-│   ├── Infrastructure/         # Cross-cutting concerns
+│   ├── Infrastructure/          # Cross-cutting concerns
+│   │   ├── FeatBitApiClient.cs # REST API client wrapper
+│   │   └── Models/             # API request/response models
 │   ├── Middleware/             # Request pipeline middleware
-│   ├── Resources/              # Embedded documentation
-│   │   ├── Deployments/       # Deployment guides
-│   │   └── Sdks/              # SDK integration guides
-│   ├── Services/               # Business logic services
+│   │   ├── GlobalExceptionHandlerMiddleware.cs
+│   │   └── McpToolTracingMiddleware.cs
 │   └── Tools/                  # MCP tool implementations
+│       ├── FeatBitApiTools.cs      # Core 8 REST API tools
+│       └── FeatBitAdvancedApiTool.cs # Advanced API tool
 ├── FeatBit.ServiceDefaults      # Aspire service defaults
-├── FeatBit.FeatureFlags         # Feature flag evaluation
+├── FeatBit.FeatureFlags         # Feature flag evaluation (for self-dogfooding)
 └── FeatBit.Contracts            # Shared interfaces
 ```
 
 ### Design Patterns
 
-#### 1. **Gateway Pattern** (Tool Routing)
+#### 1. **Hybrid Tool Strategy** (Core + Advanced)
 
-The MCP server uses a gateway pattern to limit and consolidate tools exposed to AI agents:
+The MCP server uses a hybrid approach with 8 focused core tools and 1 fallback advanced tool:
 
 ```csharp
-// Single tool handles multiple SDKs and topics
+// Core tools for common operations
 [McpServerTool]
-public async Task<string> GenerateIntegrationCode(string sdk, string topic)
+[Description("Create a new project in FeatBit...")]
+public async Task<string> CreateProject(string name, string key, string? apiKey = null)
 {
-    // Gateway validates and routes to appropriate internal handler
-    return await sdkService.GetSdkDocumentationAsync(sdk, topic);
+    var response = await _apiClient.PostAsync<CreateProjectRequest, ProjectResponse>(...);
+    return JsonSerializer.Serialize(response);
+}
+
+// Advanced tool for edge cases
+[McpServerTool]
+[Description("Call any FeatBit REST API endpoint...")]
+public async Task<string> CallAdvancedApi(string method, string endpoint, string? bodyJson = null)
+{
+    // Handles any API operation not covered by core tools
 }
 ```
 
 **Benefits:**
-- Simplified AI agent interaction (fewer tools to choose from)
-- Centralized validation and routing logic
-- Easier to add new SDKs without exposing new tools
+- **Token efficiency**: Only 9 tools (~2-3K tokens) in AI agent context
+- **Clear semantics**: Core tools provide type safety and validation
+- **Future-proof**: Advanced tool handles new API operations without server updates
+- **Progressive disclosure**: Common operations are easy, advanced operations are possible
 
-#### 2. **Strategy Pattern** (SDK Selection)
+#### 2. **API Client Wrapper Pattern**
 
-Different SDK implementations registered as services:
+`FeatBitApiClient` wraps HTTP operations with consistent error handling and authentication:
 
 ```csharp
-builder.Services.AddTransient<NetServerSdk>();
-builder.Services.AddTransient<JavascriptSdks>();
-builder.Services.AddTransient<JavaSdks>();
+public class FeatBitApiClient
+{
+    public async Task<FeatBitApiResponse<TResponse>> GetAsync<TResponse>(string endpoint, string? apiKey = null);
+    public async Task<FeatBitApiResponse<TResponse>> PostAsync<TRequest, TResponse>(...);
+    public async Task<FeatBitApiResponse<TResponse>> PutAsync<TRequest, TResponse>(...);
+    public async Task<FeatBitApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(...);
+}
 ```
 
-The `SdkService` acts as a context that selects the appropriate strategy based on the `sdk` parameter.
+**Benefits:**
+- Centralized authentication (OpenAPI key or JWT token)
+- Consistent error handling and response wrapping
+- Simplified retry logic and timeout configuration
+- Easy to mock for unit testing
 
 #### 3. **Middleware Pipeline Pattern**
 
@@ -297,75 +401,54 @@ app.UseMiddleware<McpToolTracingMiddleware>();      // OpenTelemetry tracing
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>(); // Error handling
 ```
 
+**Benefits:**
+- Separation of concerns (tracing, error handling, logging)
+- Request/response interception for observability
+- Consistent error responses across all tools
+
 #### 4. **Dependency Injection Pattern**
 
 Heavy use of .NET's built-in DI container:
 
 ```csharp
-// Scoped per request
+// Singleton for shared resources
+builder.Services.AddSingleton<FeatBitApiClient>();
+
+// Scoped per request (for feature flag evaluation)
 builder.Services.AddScoped<ISessionContext, SessionContext>();
 builder.Services.AddScoped<IFeatureFlagEvaluator, FeatureFlagEvaluator>();
 
-// Singleton for shared resources
-builder.Services.AddSingleton<IDocumentLoader, ResourcesDocumentLoader>();
-builder.Services.AddSingleton<IClaudeSkillsMarkdownParser, ClaudeSkillsMarkdownParser>();
-
-// Transient for lightweight services
-builder.Services.AddTransient<NetServerSdk>();
+// Transient for tool instances
+builder.Services.AddTransient<FeatBitApiTools>();
+builder.Services.AddTransient<FeatBitAdvancedApiTool>();
 ```
 
-#### 5. **Abstract Factory Pattern** (AI Client Factory)
+**Benefits:**
+- Testability through interface abstractions
+- Lifecycle management (singleton, scoped, transient)
+- Easy to swap implementations (e.g., mock API client for testing)
 
-`AiChatClientFactory` creates different AI chat clients based on configuration:
+#### 5. **Feature Toggle Pattern** (Self-Dogfooding)
 
-```csharp
-public IChatClient CreateChatClient(string? provider = null)
-{
-    // Factory selects OpenAI, Azure OpenAI, or other providers
-}
-```
-
-#### 6. **Repository Pattern** (Document Loading)
-
-`IDocumentLoader` abstracts document retrieval:
+The server can use FeatBit's own SDK to control its behavior (optional):
 
 ```csharp
-public interface IDocumentLoader
-{
-    Task<string> LoadDocumentAsync(string path);
-}
-```
-
-Implementations:
-- `ResourcesDocumentLoader`: Loads from embedded resources
-- `S3DocumentLoader`: Could load from AWS S3 (future)
-- Enables easy switching between storage backends
-
-#### 7. **Feature Toggle Pattern** (Self-Dogfooding)
-
-The server uses FeatBit's own SDK to control its behavior:
-
-```csharp
-// Feature flags control SDK selection strategy
-var useAiForSelection = await featureFlagEvaluator.BoolVariationAsync(
-    "use-ai-sdk-selection", 
+// Feature flags control server behavior
+var enableAdvancedLogging = await featureFlagEvaluator.BoolVariationAsync(
+    "enable-advanced-logging", 
     defaultValue: false
 );
 ```
 
 This enables:
-- Gradual rollout of new features
-- A/B testing different AI selection strategies
+- Gradual rollout of new MCP server features
+- A/B testing different API integration strategies
 - Safe experimentation in production
+- Dynamic configuration without redeployment
 
-#### 8. **Chain of Responsibility Pattern** (Document Selection)
+**Note**: Feature flag evaluation is optional. Without FeatBit SDK configuration, the server uses default values from [FeatureFlag.cs](FeatBit/FeatBit.FeatureFlags/FeatureFlag.cs).
 
-Document selection can use multiple strategies in sequence:
-1. Try exact match by filename
-2. If not found, use AI for semantic search
-3. If still not found, return default documentation
-
-#### 9. **Adapter Pattern** (MCP Tool Tracing)
+#### 6. **Adapter Pattern** (MCP Tool Tracing)
 
 `McpToolTracingMiddleware` adapts the MCP request/response into OpenTelemetry spans:
 
@@ -378,34 +461,41 @@ public class McpToolTracingMiddleware
 
 ### Key Architectural Decisions
 
-#### Session Context vs MCP Session Management
+#### Hybrid Tool Architecture (8+1 Pattern)
+
+The server exposes 9 tools total: 8 core tools for common operations + 1 advanced tool for edge cases.
+
+**Rationale:**
+- **Token efficiency**: Minimize AI agent context window usage (~2-3K tokens)
+- **Semantic clarity**: Core tools provide clear, type-safe interfaces
+- **Extensibility**: Advanced tool handles new API operations without server updates
+- **Progressive complexity**: Simple cases are easy, complex cases are possible
+
+#### REST API Direct Integration
+
+The server directly integrates with FeatBit's REST API rather than wrapping the SDK:
+
+**Benefits:**
+- Full CRUD operations (Create, Read, Update, Delete/Toggle)
+- Access to administrative operations (projects, environments, flags)
+- Real-time updates without SDK cache delays
+- Programmatic control over feature flag lifecycle
+
+**Trade-offs:**
+- Requires FeatBit API authentication
+- Network latency for each operation
+- No offline evaluation capabilities
+
+#### Session Context for Feature Flag Evaluation
 
 ```csharp
 // Separate from MCP's internal session management
 builder.Services.AddScoped<ISessionContext, SessionContext>();
 ```
 
-The server maintains its own session context for feature flag user identification, independent of MCP's session handling.
+The server maintains its own session context for feature flag user identification (when using FeatBit SDK for self-dogfooding), independent of MCP's session handling.
 
-#### Embedded Resources Strategy
-
-Documentation is embedded in the assembly:
-
-```xml
-<EmbeddedResource Include="Resources\Deployments\*.md" />
-<EmbeddedResource Include="Resources\Sdks\**\*.md" />
-```
-
-**Benefits:**
-- Self-contained distribution
-- No external dependencies at runtime
-- Versioning aligned with code
-
-**Trade-offs:**
-- Larger assembly size
-- Documentation updates require recompilation
-
-#### Bootstrap Mode and Offline Operation
+#### Default Values and Graceful Degradation
 
 The server uses feature flags defined in [FeatureFlag.cs](FeatBit/FeatBit.FeatureFlags/FeatureFlag.cs) with default values as fallback:
 
@@ -437,33 +527,50 @@ builder.AddServiceDefaults(); // Adds OpenTelemetry
 ```
 
 **Traces:**
-- HTTP request tracing
+- HTTP request tracing (incoming MCP requests)
+- HTTP client tracing (outgoing FeatBit API calls)
 - MCP tool invocation tracing (via `McpToolTracingMiddleware`)
-- AI chat client tracing (via `ChatClientOpenTelemetryMiddleware`)
-- Feature flag evaluation tracing
+- Feature flag evaluation tracing (when SDK is configured)
 
 **Metrics:**
 - Request counts and durations
-- Tool usage statistics
-- Feature flag evaluation counts
+- Tool usage statistics (which tools are called most frequently)
+- FeatBit API call success/failure rates
+- Feature flag evaluation counts (when SDK is configured)
 
 **Logs:**
 - Structured logging via `ILogger<T>`
 - Correlated with traces via Activity IDs
+- API request/response logging for debugging
 
 ### Scalability Considerations
 
-1. **Stateless Design**: Each request is independent, enabling horizontal scaling
-2. **Scoped Services**: Session context is scoped per request, no shared state
-3. **Feature Flag Caching**: FeatBit SDK caches flags locally, reducing network calls
-4. **Resource Embedding**: No external I/O for documentation retrieval
+1. **Stateless Design**: Each MCP request is independent, enabling horizontal scaling
+2. **Scoped Services**: Session context is scoped per request, no shared state between requests
+3. **HTTP Client Pooling**: `FeatBitApiClient` uses HttpClient pooling for efficient connection reuse
+4. **Feature Flag Caching**: FeatBit SDK (when configured) caches flags locally, reducing network calls
 
 ### Security Considerations
 
-1. **API Key Management**: AI provider keys stored in configuration (use Key Vault in production)
-2. **FeatBit Secret**: Environment secret for feature flag evaluation
-3. **Input Validation**: Tool parameters validated before processing
-4. **Error Handling**: Global exception handler prevents information leakage
+1. **API Key Management**: 
+   - FeatBit OpenAPI keys stored in configuration (use Azure Key Vault or similar in production)
+   - Support for both OpenAPI keys (recommended) and JWT tokens
+   - Keys passed per request or configured globally
+   
+2. **Authentication Flexibility**:
+   - Users can provide their own API key per tool invocation
+   - Falls back to configured default API key
+   - Enables multi-tenant scenarios
+
+3. **Input Validation**: 
+   - Tool parameters validated before API calls
+   - JSON deserialization with error handling
+   - Endpoint validation in advanced tool
+
+4. **Error Handling**: 
+   - Global exception handler prevents information leakage
+   - Structured error responses
+   - API errors wrapped in consistent format
 
 ---
 
