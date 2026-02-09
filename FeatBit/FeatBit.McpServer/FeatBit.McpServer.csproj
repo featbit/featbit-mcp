@@ -9,9 +9,9 @@
     <!-- Set recommended package metadata -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>FeatBit.McpServer</PackageId>
-    <PackageVersion>0.1.6</PackageVersion>
-    <PackageTags>AI; MCP; server; http; FeatBit; feature-flags</PackageTags>
-    <Description>A FeatBit MCP server for feature flag management using the MCP C# SDK.</Description>
+    <PackageVersion>0.2.0</PackageVersion>
+    <PackageTags>AI; MCP; server; http; FeatBit; feature-flags; REST-API</PackageTags>
+    <Description>A FeatBit MCP server for feature flag management via REST API using the MCP C# SDK.</Description>
   </PropertyGroup>
 
   <!-- Include additional files for browsing the MCP server. -->
@@ -20,30 +20,12 @@
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
-  <!-- Include deployment documentation as both embedded and file resources -->
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Deployments\*.md" />
-    <None Include="Resources\Deployments\*.md" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <!-- Include SDK documentation (including nested folders) as both embedded and file resources -->
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Sdks\**\*.md" />
-    <None Include="Resources\Sdks\**\*.md" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
-    <PackageReference Include="FeatBit.ServerSdk" Version="1.2.9" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.5.0-preview.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FeatBit.ServiceDefaults\FeatBit.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\FeatBit.FeatureFlags\FeatBit.FeatureFlags.csproj" />
-    <ProjectReference Include="..\FeatBit.Contracts\FeatBit.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

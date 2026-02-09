@@ -1,19 +1,16 @@
 {
   "servers": {
-    "aspire-dashboard": {
-      "type": "http",
-      "url": "http://localhost:18202/mcp",
-      "headers": {
-        "x-mcp-api-key": "68a3e8daec65d1432867f5996fa70eff"
-      }
+    "aspire": {
+      "type": "stdio",
+      "command": "aspire",
+      "args": [
+        "mcp",
+        "start"
+      ]
     },
     "featbit-mcp": {
       "type": "http",
       "url": "http://localhost:5180/mcp"
     },
-    "featbit-mcp-remote": {
-      "type": "http",
-      "url": "https://mcp.featbit.co/mcp"
-    }
   }
 }

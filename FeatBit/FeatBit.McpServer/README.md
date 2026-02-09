@@ -6,30 +6,69 @@ Real Content of FeatBit/FeatBit.McpServer/README.md
 
 ## Introduction
 
-We use Microsoft's MCP (Model Context Protocol) server framework to build a feature flag management server. For now, this MCP helps AI Coding Agent to manage FeatBit, it includes:
-- Deployment of FeatBit
-- Integration with FeatBit's SDKs
-- Best practices for feature flag management
-- Troubleshooting common issues
+A Model Context Protocol (MCP) server that connects AI coding agents directly to FeatBit's REST API for programmatic feature flag management. This server provides tools for creating projects, environments, and feature flags through FeatBit's API.
 
 ## Features
 
-### Bootstrap Mode Support
+### REST API Integration
 
-The MCP server now supports **Bootstrap Mode** for offline operation or when the FeatBit server is unavailable. When enabled, the SDK will load feature flags from a local JSON file as a fallback.
+The MCP server provides direct integration with FeatBit's REST API:
 
-See [BOOTSTRAP.md](BOOTSTRAP.md) for detailed documentation on:
-- Configuring bootstrap mode
-- Creating bootstrap files
-- Use cases and troubleshooting
+- **Project Management**: Create and manage projects
+- **Environment Management**: Create environments within projects
+- **Feature Flag Management**: Create, update, toggle, and query feature flags
+- **Advanced API Operations**: Access any FeatBit API endpoint for custom scenarios
+
+### Core Tools (8 Tools)
+
+1. **CreateProject** - Create a new FeatBit project
+2. **GetProjects** - List all projects in the organization
+3. **GetProject** - Get detailed information about a specific project
+4. **CreateEnvironment** - Create a new environment within a project
+5. **CreateFeatureFlag** - Create a new feature flag with custom variations
+6. **GetFeatureFlag** - Retrieve feature flag details
+7. **UpdateFeatureFlag** - Update feature flag properties
+8. **ToggleFeatureFlag** - Enable or disable a feature flag
+
+### Advanced Tool
+
+- **CallAdvancedApi** - Call any FeatBit REST API endpoint for advanced scenarios
+
+## Configuration
+
+Configure the server by setting the following in `appsettings.json` or environment variables:
+
+```json
+{
+  "FeatBitApi": {
+    "BaseUrl": "https://app.featbit.co",
+    "ApiKey": "your-openapi-key-here",
+    "JwtToken": ""
+  }
+}
+```
+
+### Authentication Methods
+
+Choose one of the following authentication methods:
+
+1. **OpenAPI Key** (Recommended for MCP servers)
+   - Best for automation and machine-to-machine communication
+   - Set `FeatBitApi:ApiKey` in configuration
+   - No expiration unless revoked
+
+2. **JWT Bearer Token**
+   - For user-scoped operations
+   - Set `FeatBitApi:JwtToken` in configuration
+   - Session-based expiration
 
 ## Design Pattern
 
-1. Limit the number of tools that AI agents can use to interact with FeatBit.
-2. Add gateway in each tool to validate the input parameters and redirect to the correct internal tool.
-  - e.g. One `GenerateIntegrationCode` tool to handle all SDK code generation requests for different languages and topics.
-  - e.g. troubleshooting tool to handle all issues and use RAG or grep to find the solution from the knowledge base.
-3. Do we need a interface to return which parameters and tool the ai should call next?
+The server uses a **hybrid approach** balancing token efficiency with AI usability:
+
+- **Core tools** for common operations (8 tools): Provides clear semantics and type safety
+- **Advanced tool** for edge cases (1 tool): Handles less common API operations dynamically
+- Total: 9 tools (~2-3K tokens in context)
 
 
 
