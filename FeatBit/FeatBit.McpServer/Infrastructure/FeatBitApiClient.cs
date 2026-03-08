@@ -25,7 +25,7 @@ public class FeatBitApiClient
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
 
-        var baseUrl = configuration["FeatBitApi:BaseUrl"] ?? "https://app.featbit.co";
+        var baseUrl = configuration["FeatBitApi:BaseUrl"] ?? "https://app-api.featbit.co";
         _httpClient.BaseAddress = new Uri(baseUrl);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
