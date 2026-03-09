@@ -1,5 +1,8 @@
+using FeatBit.Contracts;
+using FeatBit.FeatureFlags;
 using FeatBit.McpServer.Infrastructure;
 using FeatBit.McpServer.Middleware;
+using FeatBit.Sdk.Server.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,13 +19,29 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<FeatBitApiClient>();
 
 // ========================================
+// Initialize FeatBit SDK
+// ========================================
+builder.Services.AddFeatBit(options =>
+{
+    options.EnvSecret = builder.Configuration["FeatBit:EnvSecret"];
+    options.StreamingUri = new Uri(builder.Configuration["FeatBit:StreamingUri"] ?? "wss://app-eval.featbit.co");
+    options.EventUri = new Uri(builder.Configuration["FeatBit:EventUri"] ?? "https://app-eval.featbit.co");
+    options.StartWaitTime = TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("FeatBit:StartWaitTimeSeconds", 3));
+    options.DisableEvents = false;
+});
+
+builder.Services.AddScoped<ISessionContext, McpSessionContext>();
+builder.Services.AddScoped<IFeatureFlagEvaluator, FeatureFlagEvaluator>();
+
+// ========================================
 // Register MCP Server
 // ========================================
 // Add the MCP server with HTTP transport
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
-    .WithToolsFromAssembly();
+    .WithToolsFromAssembly()
+    .WithRequestFilters(r => r.AddMcpToolFlagGateFilter(typeof(Program).Assembly));
 
 var app = builder.Build();
 

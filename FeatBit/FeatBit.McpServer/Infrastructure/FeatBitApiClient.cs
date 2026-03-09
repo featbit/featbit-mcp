@@ -62,6 +62,23 @@ public class FeatBitApiClient
         }
     }
 
+    public async Task<string> PostAsync(string endpoint, string jsonBody)
+    {
+        try
+        {
+            _logger.LogInformation("POST {Endpoint}", endpoint);
+            using var request = CreateRequest(HttpMethod.Post, endpoint);
+            request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.SendAsync(request);
+            return await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calling POST {Endpoint}", endpoint);
+            return JsonSerializer.Serialize(new { error = ex.Message });
+        }
+    }
+
     private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)
     {
         var request = new HttpRequestMessage(method, endpoint);

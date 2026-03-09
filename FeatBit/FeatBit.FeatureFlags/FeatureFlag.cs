@@ -24,4 +24,10 @@ public sealed record FeatureFlag(string Key, bool DefaultValue, string Descripti
         DefaultValue: false,
         Description: "Controls whether to return a suggestion message when no documentation is found"
     );
+
+    public static readonly FeatureFlag AddFeatureFlagTargetUser = new(
+        Key: "add-feature-flag-target-user",
+        DefaultValue: false,
+        Description: "Controls whether the AddFlagTargetUser tool is available"
+    );
 }

@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FeatBit.FeatureFlags\FeatBit.FeatureFlags.csproj" />
     <ProjectReference Include="..\FeatBit.ServiceDefaults\FeatBit.ServiceDefaults.csproj" />
   </ItemGroup>
 

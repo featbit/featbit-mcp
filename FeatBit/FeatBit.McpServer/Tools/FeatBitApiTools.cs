@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Text.Json;
+using FeatBit.FeatureFlags;
 using FeatBit.McpServer.Infrastructure;
 using ModelContextProtocol.Server;
 
@@ -81,4 +83,20 @@ public class FeatBitApiTools(FeatBitApiClient apiClient)
         bool status)
         => apiClient.PutAsync(
             $"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags/{Uri.EscapeDataString(key)}/toggle/{status.ToString().ToLower()}");
+
+    [McpServerTool]
+    [McpToolFlagGate(nameof(FeatureFlag.AddFeatureFlagTargetUser))]
+    [Description("Add an individual user to the targeting list of a feature flag.")]
+    public Task<string> AddFlagTargetUser(
+        [Description("The environment ID (UUID)")]
+        string envId,
+        [Description("The feature flag key")]
+        string flagKey,
+        [Description("The unique key that identifies the user")]
+        string userKey,
+        [Description("The user's email address, used as the display name")]
+        string userEmail)
+        => apiClient.PostAsync(
+            $"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags/{Uri.EscapeDataString(flagKey)}/target-users",
+            JsonSerializer.Serialize(new { keyId = userKey, name = userEmail }));
 }

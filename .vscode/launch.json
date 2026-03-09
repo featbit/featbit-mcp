@@ -5,6 +5,7 @@
       "name": "Aspire: Launch AppHost",
       "type": "aspire",
       "request": "launch",
+      "preLaunchTask": "kill-apphost",
       "program": "${workspaceFolder}/FeatBit/FeatBit.AppHost/FeatBit.AppHost.csproj"
     },
     {
@@ -12,11 +13,15 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-mcpserver",
-      "program": "${workspaceFolder}/FeatBit/FeatBit.McpServer/bin/Debug/net10.0/win-x64/FeatBit.McpServer.exe",
+      "program": "${workspaceFolder}/FeatBit/FeatBit.McpServer/bin/Debug/net10.0/FeatBit.McpServer.dll",
       "args": [],
       "cwd": "${workspaceFolder}/FeatBit/FeatBit.McpServer",
       "console": "integratedTerminal",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "env": {
+          "ASPNETCORE_ENVIRONMENT": "Development",
+          "ASPNETCORE_URLS": "http://localhost:5180"
+      }
     }
   ]
 }
