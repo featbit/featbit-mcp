@@ -72,4 +72,12 @@ public interface IFeatureFlagEvaluator
     /// <param name="asyncFunc">The async function to execute if the flag is enabled</param>
     /// <returns>The result of the async function if enabled, otherwise default(T)</returns>
     Task<T> ReleaseEnabledThenAsync<T>(FeatureFlag flag, Func<Task<T>> asyncFunc);
+
+    /// <summary>
+    /// Evaluates a string feature flag and returns its variation value.
+    /// Creates a span in OpenTelemetry that includes flag key, result, and user information.
+    /// </summary>
+    /// <param name="flag">The feature flag to evaluate</param>
+    /// <returns>The evaluated string variation value</returns>
+    string StringVariation(FeatureFlag flag);
 }

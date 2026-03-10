@@ -7,7 +7,7 @@ using ModelContextProtocol.Server;
 namespace FeatBit.McpServer.Tools;
 
 [McpServerToolType]
-public class FeatBitApiTools(FeatBitApiClient apiClient)
+public class FeatBitApiTools(FeatBitApiClient apiClient, IFeatureFlagEvaluator flagEvaluator)
 {
     // ========================================
     // Project Management
@@ -33,7 +33,7 @@ public class FeatBitApiTools(FeatBitApiClient apiClient)
     [Description(
         "Get the list of feature flags in an environment. " +
         "Supports filtering by name/key, tags, enabled/disabled status, and archived status, with pagination.")]
-    public Task<string> GetFeatureFlags(
+    public async Task<string> GetFeatureFlags(
         [Description("The environment ID (UUID)")]
         string envId,
         [Description("Filter by flag name or key (partial match)")]
@@ -69,7 +69,37 @@ public class FeatBitApiTools(FeatBitApiClient apiClient)
         var path = $"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags";
         if (query.Count > 0) path += "?" + string.Join("&", query);
 
-        return apiClient.GetAsync(path);
+        var json = await apiClient.GetAsync(path);
+
+        // [FeatureFlag: flag-list] shape the response based on variation: full | short | key-ct-ut
+        var variation = flagEvaluator.StringVariation(FeatureFlag.FlagList);
+        if (variation == "full")
+        {
+            return json;
+        }
+        else if (variation == "short")
+        {
+            using var doc = JsonDocument.Parse(json);
+            var keys = doc.RootElement.GetProperty("data").GetProperty("items").EnumerateArray()
+                .Select(item => item.GetProperty("key").GetString())
+                .ToList();
+            return JsonSerializer.Serialize(keys);
+        }
+        else if (variation == "key-ct-ut")
+        {
+            using var doc = JsonDocument.Parse(json);
+            var slim = doc.RootElement.GetProperty("data").GetProperty("items").EnumerateArray()
+                .Select(item => new
+                {
+                    key       = item.GetProperty("key").GetString(),
+                    createdAt = item.GetProperty("createdAt").GetString(),
+                    updatedAt = item.GetProperty("updatedAt").GetString()
+                })
+                .ToList();
+            return JsonSerializer.Serialize(slim);
+        }
+
+        return json;
     }
 
     [McpServerTool]

@@ -82,6 +82,7 @@ public class McpToolTracingMiddleware
             if (activity != null)
             {
                 activity.SetTag("mcp.tool.name", toolName);
+                activity.SetTag("mcp.session.id", context.Request.Headers["mcp-session-id"].ToString());
 
                 // Add all parameters as tags
                 if (parameters != null)

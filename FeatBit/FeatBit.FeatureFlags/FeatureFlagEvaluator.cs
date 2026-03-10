@@ -30,27 +30,31 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
     /// <summary>
     /// Creates and configures an Activity for feature flag evaluation with all standard tags.
     /// </summary>
-    private Activity? CreateFeatureFlagActivity(FeatureFlag flag, string operationType, out bool result)
+    private FbUser BuildUser() => FbUser.Builder(_sessionContext.SessionId)
+        .Custom("call-uuid", Guid.NewGuid().ToString())
+        .Build();
+
+    private Activity? CreateActivity(string name)
     {
-        var activity = ActivitySource.StartActivity(
-            $"FeatureFlag.{operationType}: {flag.Key}",
-            ActivityKind.Client);
-        
-        // FeatBit is a remote service - set peer.service and server.address
+        var activity = ActivitySource.StartActivity(name, ActivityKind.Client);
         activity?.SetTag("peer.service", "featbit");
         activity?.SetTag("server.address", "app-eval.featbit.co");
-        
-        var user = FbUser.Builder(_sessionContext.SessionId).Build();
-        
+        activity?.SetTag("feature_flag.user.key", _sessionContext.SessionId);
+        return activity;
+    }
+
+    private Activity? CreateFeatureFlagActivity(FeatureFlag flag, string operationType, out bool result)
+    {
+        var user = BuildUser();
+        var activity = CreateActivity($"FeatureFlag.{operationType}: {flag.Key}");
+
         activity?.SetTag("feature_flag.key", flag.Key);
         activity?.SetTag("feature_flag.default_value", flag.DefaultValue);
-        activity?.SetTag("feature_flag.user.key", user.Key);
-        
-        result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
-        
-        activity?.SetTag("feature_flag.result", result);
         activity?.SetTag("feature_flag.description", flag.Description);
-        
+
+        result = _fbClient.BoolVariation(flag.Key, user, flag.DefaultValue);
+        activity?.SetTag("feature_flag.result", result);
+
         return activity;
     }
 
@@ -149,5 +153,21 @@ public class FeatureFlagEvaluator : IFeatureFlagEvaluator
     public Task<T> ReleaseEnabledThenAsync<T>(FeatureFlag flag, Func<Task<T>> asyncFunc)
     {
         return ReleaseEnabledThenAsync(flag, asyncFunc, default(T)!);
+    }
+
+    /// <inheritdoc />
+    public string StringVariation(FeatureFlag flag)
+    {
+        var user = BuildUser();
+        var activity = CreateActivity($"FeatureFlag.Variation: {flag.Key}");
+
+        activity?.SetTag("feature_flag.key", flag.Key);
+        activity?.SetTag("feature_flag.description", flag.Description);
+
+        var result = _fbClient.StringVariation(flag.Key, user, flag.DefaultStringValue);
+        activity?.SetTag("feature_flag.result", result);
+
+        activity?.Dispose();
+        return result;
     }
 }

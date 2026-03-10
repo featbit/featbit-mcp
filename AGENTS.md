@@ -94,6 +94,8 @@ FeatBit/
 
 ### Feature Flags
 
+> **For detailed step-by-step guidance on integrating feature flags, use the `featureflags` skill.**
+
 Feature flags are treated as a **cross-cutting concern** (like logging), not a domain concept. All flag definitions live in `FeatBit.FeatureFlags/FeatureFlag.cs` and are available to any project via a project reference.
 
 #### Declaring a Feature Flag
