@@ -14,6 +14,7 @@ public class FeatBitApiClient
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<FeatBitApiClient> _logger;
+    private readonly string _evalUrl;
 
     public FeatBitApiClient(
         HttpClient httpClient,
@@ -28,6 +29,7 @@ public class FeatBitApiClient
         var baseUrl = configuration["FeatBitApi:BaseUrl"] ?? "https://app-api.featbit.co";
         _httpClient.BaseAddress = new Uri(baseUrl);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        _evalUrl = (configuration["FeatBit:EventUri"] ?? "https://app-eval.featbit.co").TrimEnd('/');
     }
 
     public async Task<string> GetAsync(string endpoint)
@@ -92,6 +94,33 @@ public class FeatBitApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling PATCH {Endpoint}", endpoint);
+            return InternalErrorJson;
+        }
+    }
+
+    public async Task<string> EvaluateAsync(string jsonBody)
+    {
+        const string path = "/api/public/featureflag/evaluate";
+        var fullUrl = _evalUrl + path;
+        try
+        {
+            _logger.LogInformation("POST (eval) {Endpoint}", path);
+            using var request = new HttpRequestMessage(HttpMethod.Post, fullUrl);
+            request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+
+            // Eval API authenticates with the environment secret key (plain, no "Bearer" prefix)
+            // forwarded from the X-FeatBit-Env-Secret header of the incoming MCP request
+            var ctx = _httpContextAccessor.HttpContext;
+            if (ctx?.Request.Headers.TryGetValue("X-FeatBit-Env-Secret", out var secret) == true
+                && !StringValues.IsNullOrEmpty(secret))
+                request.Headers.TryAddWithoutValidation("Authorization", (string?)secret);
+
+            var response = await _httpClient.SendAsync(request);
+            return await SafeReadResponseAsync(response, "POST (eval)", path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calling POST (eval) {Endpoint}", path);
             return InternalErrorJson;
         }
     }
