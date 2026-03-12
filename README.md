@@ -227,7 +227,19 @@ Run the server from source when you need a custom `BaseUrl` pointing to a self-h
 | `GetProjects` | List all projects in the organization | — |
 | `GetProject` | Get a project's details, environments, and credentials (Server Key, Client Key) | `projectId` |
 | `GetFeatureFlags` | List feature flags in an environment. Supports filtering by name/key, tags, enabled/disabled status, archived status, and pagination | `envId` *(required)*, `name`, `tags`, `isEnabled`, `isArchived`, `sortBy`, `pageIndex`, `pageSize` |
+| `GetFeatureFlag` | Get a single feature flag by key | `envId` *(required)*, `key` *(required)* |
 | `ToggleFeatureFlag` | Enable or disable a feature flag | `envId` *(required)*, `key` *(required)*, `status` *(required)* |
+| `ArchiveFeatureFlag` | Archive a feature flag. Archived flags are hidden from the main list by default but can be restored later | `envId` *(required)*, `key` *(required)* |
+| `CreateFeatureFlag` | Create a feature flag with the given name, key, and description. The flag is created disabled; use `ToggleFeatureFlag` to enable it | `envId` *(required)*, `name` *(required)*, `key` *(required)*, `description` |
+| `UpdateFeatureFlagRollout` | Update the default rollout (fallthrough) of a feature flag. Only the `/fallthrough` path is modified — other flag settings are left unchanged. Accepts rollout assignments as `[{"variationId", "percentage"}]` where percentages must sum to 100 | `envId` *(required)*, `key` *(required)*, `rolloutAssignments` *(required)*, `dispatchKey` |
+
+---
+
+https://app-api.featbit.co/docs/index.html
+https://app-api.featbit.co/swagger/OpenApi/swagger.json
+
+Todo List:
+- **Evaluate Feature flags for a given user**: Evaluate all feature flags in an environment for a given user. The request body should include the user's attributes, and the response will indicate which flags are enabled for that user. [https://docs.featbit.co/api-docs/flag-evaluation-api](https://docs.featbit.co/api-docs/flag-evaluation-api)
 
 ---
 

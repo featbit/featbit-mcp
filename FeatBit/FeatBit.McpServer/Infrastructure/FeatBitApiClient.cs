@@ -37,12 +37,12 @@ public class FeatBitApiClient
             _logger.LogInformation("GET {Endpoint}", endpoint);
             using var request = CreateRequest(HttpMethod.Get, endpoint);
             var response = await _httpClient.SendAsync(request);
-            return await response.Content.ReadAsStringAsync();
+            return await SafeReadResponseAsync(response, "GET", endpoint);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling GET {Endpoint}", endpoint);
-            return JsonSerializer.Serialize(new { error = ex.Message });
+            return InternalErrorJson;
         }
     }
 
@@ -53,12 +53,12 @@ public class FeatBitApiClient
             _logger.LogInformation("PUT {Endpoint}", endpoint);
             using var request = CreateRequest(HttpMethod.Put, endpoint);
             var response = await _httpClient.SendAsync(request);
-            return await response.Content.ReadAsStringAsync();
+            return await SafeReadResponseAsync(response, "PUT", endpoint);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling PUT {Endpoint}", endpoint);
-            return JsonSerializer.Serialize(new { error = ex.Message });
+            return InternalErrorJson;
         }
     }
 
@@ -70,13 +70,48 @@ public class FeatBitApiClient
             using var request = CreateRequest(HttpMethod.Post, endpoint);
             request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
             var response = await _httpClient.SendAsync(request);
-            return await response.Content.ReadAsStringAsync();
+            return await SafeReadResponseAsync(response, "POST", endpoint);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling POST {Endpoint}", endpoint);
-            return JsonSerializer.Serialize(new { error = ex.Message });
+            return InternalErrorJson;
         }
+    }
+
+    public async Task<string> PatchAsync(string endpoint, string jsonBody)
+    {
+        try
+        {
+            _logger.LogInformation("PATCH {Endpoint}", endpoint);
+            using var request = CreateRequest(HttpMethod.Patch, endpoint);
+            request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.SendAsync(request);
+            return await SafeReadResponseAsync(response, "PATCH", endpoint);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calling PATCH {Endpoint}", endpoint);
+            return InternalErrorJson;
+        }
+    }
+
+    // Sanitize HTTP responses: successful responses pass through; error responses are
+    // logged in full (for server-side diagnostics) but only a generic message is returned
+    // to the caller so that internal details never reach the MCP client.
+    private static readonly string InternalErrorJson =
+        JsonSerializer.Serialize(new { error = "An internal server error occurred." });
+
+    private async Task<string> SafeReadResponseAsync(HttpResponseMessage response, string method, string endpoint)
+    {
+        var body = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
+            return body;
+
+        _logger.LogWarning(
+            "{Method} {Endpoint} returned {StatusCode}: {Body}",
+            method, endpoint, (int)response.StatusCode, body);
+        return InternalErrorJson;
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)

@@ -115,6 +115,101 @@ public class FeatBitApiTools(FeatBitApiClient apiClient, IFeatureFlagEvaluator f
             $"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags/{Uri.EscapeDataString(key)}/toggle/{status.ToString().ToLower()}");
 
     [McpServerTool]
+    [Description("Get a single feature flag by key.")]
+    public Task<string> GetFeatureFlag(
+        [Description("The environment ID (UUID)")]
+        string envId,
+        [Description("The feature flag key")]
+        string key)
+        => apiClient.GetAsync($"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags/{Uri.EscapeDataString(key)}");
+
+    [McpServerTool]
+    [Description(
+        "Archive a feature flag with the specified key. " +
+        "Archived flags are hidden from the main list by default but can be restored later.")]
+    public Task<string> ArchiveFeatureFlag(
+        [Description("The environment ID (UUID)")]
+        string envId,
+        [Description("The feature flag key")]
+        string key)
+        => apiClient.PutAsync($"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags/{Uri.EscapeDataString(key)}/archive");
+
+    [McpServerTool]
+    [Description(
+        "Create a feature flag with the given name, key, and description. " +
+        "The flag is created in a disabled state; use ToggleFeatureFlag to enable it.")]
+    public Task<string> CreateFeatureFlag(
+        [Description("The environment ID (UUID)")]
+        string envId,
+        [Description("The display name of the feature flag")]
+        string name,
+        [Description("The unique key of the feature flag (must be unique within the environment)")]
+        string key,
+        [Description("Optional description for the feature flag")]
+        string? description = null)
+        => apiClient.PostAsync(
+            $"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags",
+            JsonSerializer.Serialize(new { envId, name, key, isEnabled = false, description }));
+
+    [McpServerTool]
+    [Description(
+        "Update the default rollout (fallthrough) of a feature flag using the JSON patch method. " +
+        "Only the fallthrough configuration is modified — other flag settings are left unchanged. " +
+        "Provide the rollout as a JSON array where each element specifies a variation ID and the percentage of " +
+        "traffic to route to it. Percentages must sum to 100. " +
+        "Example: [{\"variationId\":\"abc-uuid\",\"percentage\":70},{\"variationId\":\"def-uuid\",\"percentage\":30}]")]
+    public async Task<string> UpdateFeatureFlagRollout(
+        [Description("The environment ID (UUID)")]
+        string envId,
+        [Description("The feature flag key")]
+        string key,
+        [Description(
+            "JSON array of rollout assignments. Each element: {\"variationId\": \"<uuid>\", \"percentage\": <number>}. " +
+            "Percentages must sum to 100.")]
+        string rolloutAssignments,
+        [Description(
+            "The user attribute used for consistent bucketing (e.g. 'email', 'country'). " +
+            "Omit or set to null for random/percentage-based rollout.")]
+        string? dispatchKey = null)
+    {
+        using var doc = JsonDocument.Parse(rolloutAssignments);
+        var assignments = doc.RootElement.EnumerateArray()
+            .Select(el => new
+            {
+                variationId = el.GetProperty("variationId").GetString()!,
+                percentage  = el.GetProperty("percentage").GetDouble()
+            })
+            .ToArray();
+
+        var total = assignments.Sum(a => a.percentage);
+        if (Math.Abs(total - 100.0) > 0.01)
+            return JsonSerializer.Serialize(new { error = $"Percentages must sum to 100, but got {total}." });
+
+        double cursor = 0.0;
+        var variations = assignments.Select(a =>
+        {
+            var start = Math.Round(cursor, 4);
+            cursor += a.percentage / 100.0;
+            var end = Math.Round(cursor, 4);
+            return new { id = a.variationId, rollout = new[] { start, end }, exptRollout = 1.0 };
+        }).ToArray();
+
+        var fallthrough = new
+        {
+            dispatchKey      = dispatchKey,
+            includedInExpt   = false,
+            variations
+        };
+
+        var patch = JsonSerializer.Serialize(
+            new[] { new { op = "replace", path = "/fallthrough", value = (object)fallthrough } });
+
+        return await apiClient.PatchAsync(
+            $"/api/v1/envs/{Uri.EscapeDataString(envId)}/feature-flags/{Uri.EscapeDataString(key)}",
+            patch);
+    }
+
+    [McpServerTool]
     [McpToolFlagGate(nameof(FeatureFlag.AddFeatureFlagTargetUser))]
     [Description("Add an individual user to the targeting list of a feature flag.")]
     public Task<string> AddFlagTargetUser(
