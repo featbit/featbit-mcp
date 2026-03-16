@@ -17,11 +17,24 @@ namespace FeatBit.FeatureFlags;
 /// <param name="Key">The feature flag key used in FeatBit</param>
 /// <param name="DefaultValue">The default value when FeatBit is unavailable or in offline mode</param>
 /// <param name="Description">Human-readable description of what this flag controls</param>
-public sealed record FeatureFlag(string Key, bool DefaultValue, string Description)
+public sealed record FeatureFlag(string Key, bool DefaultValue, string Description, string DefaultStringValue = "")
 {
     public static readonly FeatureFlag DocNotFound = new(
         Key: "doc-not-found",
         DefaultValue: false,
         Description: "Controls whether to return a suggestion message when no documentation is found"
+    );
+
+    public static readonly FeatureFlag AddFeatureFlagTargetUser = new(
+        Key: "add-feature-flag-target-user",
+        DefaultValue: false,
+        Description: "Controls whether the AddFlagTargetUser tool is available"
+    );
+
+    public static readonly FeatureFlag FlagList = new(
+        Key: "flag-list",
+        DefaultValue: false,
+        Description: "Controls the verbosity of GetFeatureFlags: 'full' = full objects, 'short' = keys only, 'key-ct-ut' = key + createdAt + updatedAt",
+        DefaultStringValue: "full"
     );
 }

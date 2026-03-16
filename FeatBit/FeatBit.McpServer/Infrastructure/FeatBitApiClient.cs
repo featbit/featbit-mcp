@@ -1,309 +1,162 @@
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using Microsoft.Extensions.Primitives;
 
 namespace FeatBit.McpServer.Infrastructure;
 
 /// <summary>
-/// HTTP client for interacting with FeatBit REST API
-/// Handles authentication, request/response serialization, and error handling
+/// HTTP client for interacting with FeatBit REST API.
+/// Credentials (Authorization, Organization, Workspace) are forwarded from the
+/// incoming MCP HTTP request headers — no per-tool apiKey parameter needed.
 /// </summary>
 public class FeatBitApiClient
 {
     private readonly HttpClient _httpClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<FeatBitApiClient> _logger;
-    private readonly string? _apiKey;
-    private readonly string? _jwtToken;
+    private readonly string _evalUrl;
 
     public FeatBitApiClient(
         HttpClient httpClient,
+        IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
         ILogger<FeatBitApiClient> logger)
     {
         _httpClient = httpClient;
+        _httpContextAccessor = httpContextAccessor;
         _logger = logger;
 
-        // Load configuration
-        var baseUrl = configuration["FeatBitApi:BaseUrl"] ?? "https://app.featbit.co";
-        _apiKey = configuration["FeatBitApi:ApiKey"];
-        _jwtToken = configuration["FeatBitApi:JwtToken"];
-
-        // Configure HttpClient
+        var baseUrl = configuration["FeatBitApi:BaseUrl"] ?? "https://app-api.featbit.co";
         _httpClient.BaseAddress = new Uri(baseUrl);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        
-        // Note: Authentication headers are now set per-request to support dynamic API keys
+        _evalUrl = (configuration["FeatBit:EventUri"] ?? "https://app-eval.featbit.co").TrimEnd('/');
     }
 
-    /// <summary>
-    /// Send GET request to FeatBit API
-    /// </summary>
-    public async Task<FeatBitApiResponse<TResponse>> GetAsync<TResponse>(string endpoint, string? apiKey = null)
+    public async Task<string> GetAsync(string endpoint)
     {
         try
         {
-            _logger.LogInformation("Sending GET request to {Endpoint}", endpoint);
-            
-            using var request = CreateRequest(HttpMethod.Get, endpoint, apiKey);
+            _logger.LogInformation("GET {Endpoint}", endpoint);
+            using var request = CreateRequest(HttpMethod.Get, endpoint);
             var response = await _httpClient.SendAsync(request);
-            return await ProcessResponseAsync<TResponse>(response);
+            return await SafeReadResponseAsync(response, "GET", endpoint);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending GET request to {Endpoint}", endpoint);
-            return new FeatBitApiResponse<TResponse>
-            {
-                Success = false,
-                Errors = new[] { new FeatBitApiError { Message = ex.Message } }
-            };
+            _logger.LogError(ex, "Error calling GET {Endpoint}", endpoint);
+            return InternalErrorJson;
         }
     }
 
-    /// <summary>
-    /// Send POST request to FeatBit API
-    /// </summary>
-    public async Task<FeatBitApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string endpoint, TRequest data, string? apiKey = null)
+    public async Task<string> PutAsync(string endpoint)
     {
         try
         {
-            _logger.LogInformation("Sending POST request to {Endpoint}", endpoint);
-            
-            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-            
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            using var request = CreateRequest(HttpMethod.Post, endpoint, apiKey);
-            request.Content = content;
+            _logger.LogInformation("PUT {Endpoint}", endpoint);
+            using var request = CreateRequest(HttpMethod.Put, endpoint);
             var response = await _httpClient.SendAsync(request);
-            
-            return await ProcessResponseAsync<TResponse>(response);
+            return await SafeReadResponseAsync(response, "PUT", endpoint);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending POST request to {Endpoint}", endpoint);
-            return new FeatBitApiResponse<TResponse>
-            {
-                Success = false,
-                Errors = new[] { new FeatBitApiError { Message = ex.Message } }
-            };
+            _logger.LogError(ex, "Error calling PUT {Endpoint}", endpoint);
+            return InternalErrorJson;
         }
     }
 
-    /// <summary>
-    /// Send PUT request to FeatBit API
-    /// </summary>
-    public async Task<FeatBitApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string endpoint, TRequest data, string? apiKey = null)
+    public async Task<string> PostAsync(string endpoint, string jsonBody)
     {
         try
         {
-            _logger.LogInformation("Sending PUT request to {Endpoint}", endpoint);
-            
-            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-            
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            using var request = CreateRequest(HttpMethod.Put, endpoint, apiKey);
-            request.Content = content;
+            _logger.LogInformation("POST {Endpoint}", endpoint);
+            using var request = CreateRequest(HttpMethod.Post, endpoint);
+            request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
             var response = await _httpClient.SendAsync(request);
-            
-            return await ProcessResponseAsync<TResponse>(response);
+            return await SafeReadResponseAsync(response, "POST", endpoint);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending PUT request to {Endpoint}", endpoint);
-            return new FeatBitApiResponse<TResponse>
-            {
-                Success = false,
-                Errors = new[] { new FeatBitApiError { Message = ex.Message } }
-            };
+            _logger.LogError(ex, "Error calling POST {Endpoint}", endpoint);
+            return InternalErrorJson;
         }
     }
 
-    /// <summary>
-    /// Send PATCH request to FeatBit API
-    /// </summary>
-    public async Task<FeatBitApiResponse<TResponse>> PatchAsync<TRequest, TResponse>(string endpoint, TRequest data, string? apiKey = null)
+    public async Task<string> PatchAsync(string endpoint, string jsonBody)
     {
         try
         {
-            _logger.LogInformation("Sending PATCH request to {Endpoint}", endpoint);
-            
-            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-            
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            using var request = CreateRequest(HttpMethod.Patch, endpoint, apiKey);
-            request.Content = content;
+            _logger.LogInformation("PATCH {Endpoint}", endpoint);
+            using var request = CreateRequest(HttpMethod.Patch, endpoint);
+            request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
             var response = await _httpClient.SendAsync(request);
-            
-            return await ProcessResponseAsync<TResponse>(response);
+            return await SafeReadResponseAsync(response, "PATCH", endpoint);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending PATCH request to {Endpoint}", endpoint);
-            return new FeatBitApiResponse<TResponse>
-            {
-                Success = false,
-                Errors = new[] { new FeatBitApiError { Message = ex.Message } }
-            };
+            _logger.LogError(ex, "Error calling PATCH {Endpoint}", endpoint);
+            return InternalErrorJson;
         }
     }
 
-    /// <summary>
-    /// Send DELETE request to FeatBit API
-    /// </summary>
-    public async Task<FeatBitApiResponse<object>> DeleteAsync(string endpoint, string? apiKey = null)
+    public async Task<string> EvaluateAsync(string jsonBody)
     {
+        const string path = "/api/public/featureflag/evaluate";
+        var fullUrl = _evalUrl + path;
         try
         {
-            _logger.LogInformation("Sending DELETE request to {Endpoint}", endpoint);
-            
-            using var request = CreateRequest(HttpMethod.Delete, endpoint, apiKey);
+            _logger.LogInformation("POST (eval) {Endpoint}", path);
+            using var request = new HttpRequestMessage(HttpMethod.Post, fullUrl);
+            request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+
+            // Eval API authenticates with the environment secret key (plain, no "Bearer" prefix)
+            // forwarded from the X-FeatBit-Env-Secret header of the incoming MCP request
+            var ctx = _httpContextAccessor.HttpContext;
+            if (ctx?.Request.Headers.TryGetValue("X-FeatBit-Env-Secret", out var secret) == true
+                && !StringValues.IsNullOrEmpty(secret))
+                request.Headers.TryAddWithoutValidation("Authorization", (string?)secret);
+
             var response = await _httpClient.SendAsync(request);
-            return await ProcessResponseAsync<object>(response);
+            return await SafeReadResponseAsync(response, "POST (eval)", path);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending DELETE request to {Endpoint}", endpoint);
-            return new FeatBitApiResponse<object>
-            {
-                Success = false,
-                Errors = new[] { new FeatBitApiError { Message = ex.Message } }
-            };
+            _logger.LogError(ex, "Error calling POST (eval) {Endpoint}", path);
+            return InternalErrorJson;
         }
     }
 
-    /// <summary>
-    /// Create HTTP request with authentication header
-    /// </summary>
-    private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint, string? apiKey = null)
+    // Sanitize HTTP responses: successful responses pass through; error responses are
+    // logged in full (for server-side diagnostics) but only a generic message is returned
+    // to the caller so that internal details never reach the MCP client.
+    private static readonly string InternalErrorJson =
+        JsonSerializer.Serialize(new { error = "An internal server error occurred." });
+
+    private async Task<string> SafeReadResponseAsync(HttpResponseMessage response, string method, string endpoint)
+    {
+        var body = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
+            return body;
+
+        _logger.LogWarning(
+            "{Method} {Endpoint} returned {StatusCode}: {Body}",
+            method, endpoint, (int)response.StatusCode, body);
+        return InternalErrorJson;
+    }
+
+    private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)
     {
         var request = new HttpRequestMessage(method, endpoint);
-        
-        // Use per-request API key if provided, otherwise fall back to configured credentials
-        var effectiveApiKey = apiKey ?? _apiKey;
-        
-        if (!string.IsNullOrEmpty(effectiveApiKey))
+
+        var ctx = _httpContextAccessor.HttpContext;
+        if (ctx == null) return request;
+
+        // Forward auth and context headers from the incoming MCP request
+        foreach (var header in new[] { "Authorization", "Organization", "Workspace" })
         {
-            // OpenAPI Key authentication - send directly without scheme
-            request.Headers.TryAddWithoutValidation("Authorization", effectiveApiKey);
+            if (ctx.Request.Headers.TryGetValue(header, out var value) && !StringValues.IsNullOrEmpty(value))
+                request.Headers.TryAddWithoutValidation(header, (string?)value);
         }
-        else if (!string.IsNullOrEmpty(_jwtToken))
-        {
-            // JWT Bearer Token authentication
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _jwtToken);
-        }
-        
+
         return request;
     }
-
-    /// <summary>
-    /// Process HTTP response and deserialize to FeatBit API response format
-    /// </summary>
-    private async Task<FeatBitApiResponse<TResponse>> ProcessResponseAsync<TResponse>(HttpResponseMessage response)
-    {
-        var responseBody = await response.Content.ReadAsStringAsync();
-        
-        _logger.LogDebug("Response Status: {StatusCode}, Body: {Body}", 
-            response.StatusCode, responseBody);
-
-        if (response.IsSuccessStatusCode)
-        {
-            try
-            {
-                var apiResponse = JsonSerializer.Deserialize<FeatBitApiResponse<TResponse>>(responseBody, 
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        PropertyNameCaseInsensitive = true
-                    });
-                
-                return apiResponse ?? new FeatBitApiResponse<TResponse>
-                {
-                    Success = false,
-                    Errors = new[] { new FeatBitApiError { Message = "Failed to deserialize response" } }
-                };
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Error deserializing response");
-                return new FeatBitApiResponse<TResponse>
-                {
-                    Success = false,
-                    Errors = new[] { new FeatBitApiError { Message = $"Deserialization error: {ex.Message}" } }
-                };
-            }
-        }
-        else
-        {
-            // Try to parse error response
-            try
-            {
-                var errorResponse = JsonSerializer.Deserialize<FeatBitApiResponse<TResponse>>(responseBody,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        PropertyNameCaseInsensitive = true
-                    });
-                
-                return errorResponse ?? new FeatBitApiResponse<TResponse>
-                {
-                    Success = false,
-                    Errors = new[] { new FeatBitApiError 
-                    { 
-                        Message = $"HTTP {response.StatusCode}: {responseBody}" 
-                    } }
-                };
-            }
-            catch
-            {
-                return new FeatBitApiResponse<TResponse>
-                {
-                    Success = false,
-                    Errors = new[] { new FeatBitApiError 
-                    { 
-                        Message = $"HTTP {response.StatusCode}: {responseBody}" 
-                    } }
-                };
-            }
-        }
-    }
-}
-
-/// <summary>
-/// Standard FeatBit API response wrapper
-/// </summary>
-public class FeatBitApiResponse<T>
-{
-    [JsonPropertyName("success")]
-    public bool Success { get; set; }
-
-    [JsonPropertyName("data")]
-    public T? Data { get; set; }
-
-    [JsonPropertyName("errors")]
-    public FeatBitApiError[]? Errors { get; set; }
-}
-
-/// <summary>
-/// FeatBit API error details
-/// </summary>
-public class FeatBitApiError
-{
-    [JsonPropertyName("code")]
-    public string? Code { get; set; }
-
-    [JsonPropertyName("message")]
-    public string? Message { get; set; }
 }

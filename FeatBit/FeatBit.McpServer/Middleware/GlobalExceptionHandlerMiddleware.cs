@@ -57,15 +57,13 @@ public class GlobalExceptionHandlerMiddleware
             _ => HttpStatusCode.InternalServerError
         };
 
-        // Create error response
+        // Create a generic error response — no internal details are surfaced to callers.
+        // The full exception is already captured in structured logs and the active trace above.
         var response = new ErrorResponse
         {
             StatusCode = (int)statusCode,
-            Message = exception.Message,
-            Type = exception.GetType().Name,
-            TraceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier,
-            Path = context.Request.Path,
-            Timestamp = DateTime.UtcNow
+            Message = "An internal server error occurred.",
+            TraceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier
         };
 
         // Return JSON error response
@@ -88,9 +86,6 @@ public class GlobalExceptionHandlerMiddleware
     {
         public int StatusCode { get; set; }
         public string Message { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
         public string TraceId { get; set; } = string.Empty;
-        public string Path { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; }
     }
 }

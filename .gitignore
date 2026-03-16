@@ -48,6 +48,9 @@ ScaffoldingReadMe.txt
 # Others
 ~$*
 *~
+
+# VS Code MCP configuration (contains sensitive tokens)
+.vscode/mcp.json
 CodeCoverage/
 
 # MSBuild Binary and Structured Log

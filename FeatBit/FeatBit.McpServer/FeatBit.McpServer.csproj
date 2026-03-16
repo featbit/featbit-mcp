@@ -21,10 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.5.0-preview.1" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FeatBit.FeatureFlags\FeatBit.FeatureFlags.csproj" />
     <ProjectReference Include="..\FeatBit.ServiceDefaults\FeatBit.ServiceDefaults.csproj" />
   </ItemGroup>
 
