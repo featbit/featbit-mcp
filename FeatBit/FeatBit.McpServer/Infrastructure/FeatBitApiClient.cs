@@ -44,7 +44,7 @@ public class FeatBitApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling GET {Endpoint}", endpoint);
-            return InternalErrorJson;
+            return ErrorJson(ex.Message);
         }
     }
 
@@ -60,7 +60,7 @@ public class FeatBitApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling PUT {Endpoint}", endpoint);
-            return InternalErrorJson;
+            return ErrorJson(ex.Message);
         }
     }
 
@@ -77,7 +77,7 @@ public class FeatBitApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling POST {Endpoint}", endpoint);
-            return InternalErrorJson;
+            return ErrorJson(ex.Message);
         }
     }
 
@@ -94,7 +94,7 @@ public class FeatBitApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling PATCH {Endpoint}", endpoint);
-            return InternalErrorJson;
+            return ErrorJson(ex.Message);
         }
     }
 
@@ -121,15 +121,14 @@ public class FeatBitApiClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling POST (eval) {Endpoint}", path);
-            return InternalErrorJson;
+            return ErrorJson(ex.Message);
         }
     }
 
-    // Sanitize HTTP responses: successful responses pass through; error responses are
-    // logged in full (for server-side diagnostics) but only a generic message is returned
-    // to the caller so that internal details never reach the MCP client.
-    private static readonly string InternalErrorJson =
-        JsonSerializer.Serialize(new { error = "An internal server error occurred." });
+    // Successful responses pass through. HTTP error responses pass through too so
+    // API validation/auth failures remain actionable to the MCP caller.
+    private static string ErrorJson(string message) =>
+        JsonSerializer.Serialize(new { error = message });
 
     private async Task<string> SafeReadResponseAsync(HttpResponseMessage response, string method, string endpoint)
     {
@@ -140,7 +139,11 @@ public class FeatBitApiClient
         _logger.LogWarning(
             "{Method} {Endpoint} returned {StatusCode}: {Body}",
             method, endpoint, (int)response.StatusCode, body);
-        return InternalErrorJson;
+
+        if (!string.IsNullOrWhiteSpace(body))
+            return body;
+
+        return ErrorJson($"HTTP {(int)response.StatusCode} {response.StatusCode}");
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string endpoint)

@@ -14,7 +14,7 @@ The FeatBit MCP server is publicly hosted at **`https://mcp.featbit.co/mcp`**.
 > - **API Key**: FeatBit console → Organization Settings → API Keys → Generate New Key
 > - **Organization ID**: FeatBit console → Organization Settings → General → Organization ID
 
-Two headers are required in every request: `Authorization` (the raw API key — no `Bearer` prefix) and `Organization` (your organization ID). The server forwards them as-is to the FeatBit REST API without persisting them.
+Set FeatBit credentials as MCP request headers. `Authorization` is forwarded as-is to the FeatBit API, so use the same access token or personal token value you would use when calling the API directly. `Organization` should be set when your FeatBit token or deployment requires an organization context. `Workspace` is also forwarded when provided. Do not pass credentials as MCP tool parameters.
 
 ---
 
@@ -226,13 +226,35 @@ Run the server from source when you need a custom `BaseUrl` pointing to a self-h
 |------|-------------|------------|
 | `GetProjects` | List all projects in the organization | — |
 | `GetProject` | Get a project's details, environments, and credentials (Server Key, Client Key) | `projectId` |
-| `GetFeatureFlags` | List feature flags in an environment. Supports filtering by name/key, tags, enabled/disabled status, archived status, and pagination | `envId` *(required)*, `name`, `tags`, `isEnabled`, `isArchived`, `sortBy`, `pageIndex`, `pageSize` |
+| `GetProjectFeatureFlags` | List feature flags across all environments in a project. Supports filtering by name/key, tags, and all-page fetching | `projectId` *(required)*, `name`, `tags`, `pageIndex`, `pageSize`, `fetchAll` |
+| `GetFeatureFlags` | List feature flags in an environment. Supports filtering by name/key, tags, enabled/disabled status, archived status, pagination, and all-page fetching | `envId` *(required)*, `name`, `tags`, `isEnabled`, `isArchived`, `sortBy`, `pageIndex`, `pageSize`, `fetchAll` |
 | `GetFeatureFlag` | Get a single feature flag by key | `envId` *(required)*, `key` *(required)* |
 | `ToggleFeatureFlag` | Enable or disable a feature flag | `envId` *(required)*, `key` *(required)*, `status` *(required)* |
 | `ArchiveFeatureFlag` | Archive a feature flag. Archived flags are hidden from the main list by default but can be restored later | `envId` *(required)*, `key` *(required)* |
-| `CreateFeatureFlag` | Create a feature flag with the given name, key, and description. The flag is created disabled; use `ToggleFeatureFlag` to enable it | `envId` *(required)*, `name` *(required)*, `key` *(required)*, `description` |
+| `CreateFeatureFlag` | Create a disabled boolean feature flag with default `True` / `False` variations | `envId` *(required)*, `name` *(required)*, `key` *(required)*, `description`, `tags` |
 | `UpdateFeatureFlagRollout` | Update the default rollout (fallthrough) of a feature flag. Only the `/fallthrough` path is modified — other flag settings are left unchanged. Accepts rollout assignments as `[{"variationId", "percentage"}]` where percentages must sum to 100 | `envId` *(required)*, `key` *(required)*, `rolloutAssignments` *(required)*, `dispatchKey` |
+| `GetAuditLogs` | List audit logs in an environment with keyword, creator, resource, time range, cross-environment, pagination, and all-page filters | `envId` *(required)*, `query`, `creatorId`, `refId`, `refType`, `from`, `to`, `crossEnvironment`, `pageIndex`, `pageSize`, `fetchAll` |
+| `GetFeatureFlagAuditLogs` | List audit logs for a feature flag. Accepts either `flagId` or `flagKey`; resolves `flagKey` to the flag ID automatically | `envId` *(required)*, `flagId`, `flagKey`, `query`, `creatorId`, `from`, `to`, `crossEnvironment`, `pageIndex`, `pageSize`, `fetchAll` |
 | `EvaluateFeatureFlags` | Evaluate feature flags for a given end user and return the variation served to that user. Set the `X-FeatBit-Env-Secret` request header to the environment secret key | `userKeyId` *(required)*, `userName`, `customProperties`, `flagKeys`, `tags`, `tagFilterMode` |
+
+---
+
+## Guidance for Coding Agents
+
+When a user asks about feature flags but does not provide environment IDs, first call `GetProjects`, identify or ask for the intended project, then call `GetProjectFeatureFlags` with `fetchAll: true`.
+
+For example, for a request like:
+
+> Please check which feature flags in the current project with tag `xxx` have reached their deletion date.
+
+Use this flow:
+
+1. Call `GetProjects` if the project ID is not known.
+2. Call `GetProjectFeatureFlags` with `projectId`, `tags: "xxx"`, and `fetchAll: true`.
+3. Inspect returned flag metadata such as `key`, `name`, `description`, `tags`, `createdAt`, `updatedAt`, and `lastChange`.
+4. If the deletion date is encoded in a tag or description, compare it with today's date and report matching flags.
+5. If change history is needed, call `GetFeatureFlagAuditLogs` with the environment ID and `flagKey`.
+6. Do not archive or toggle flags unless the user explicitly asks for that action.
 
 ---
 
