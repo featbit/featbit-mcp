@@ -1,5 +1,11 @@
 # FeatBit MCP Server
 
+**IMPORTANT NOTE**: 
+
+**We're moving our MCP server into FeatBit's main project, and MCP tools will be exposed through the FeatBit API service.E**
+
+---
+
 A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that lets AI coding agents manage [FeatBit](https://featbit.co) feature flags through natural language. It acts as a thin proxy — your FeatBit API credentials are forwarded with each request, so the hosted server never stores them.
 
 Built with .NET 10, ASP.NET Core, and Aspire.
