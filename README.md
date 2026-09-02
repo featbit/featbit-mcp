@@ -2,13 +2,19 @@
 
 **IMPORTANT NOTE**: 
 
-**We're moving our MCP server into FeatBit's main project, and MCP tools will be exposed through the FeatBit API service.E**
+**We're moving this MCP server into FeatBit's main project. Its tools will be exposed through the FeatBit API service.**
 
 ---
 
 A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that lets AI coding agents manage [FeatBit](https://featbit.co) feature flags through natural language. It acts as a thin proxy — your FeatBit API credentials are forwarded with each request, so the hosted server never stores them.
 
-Built with .NET 10, ASP.NET Core, and Aspire.
+Built with .NET 10, ASP.NET Core, Aspire, and MCP C# SDK 2.2.0.
+
+## Compatibility
+
+FeatBit MCP Server `v0.2.2` supports FeatBit `v5.4.4` through `v5.4.8`. These FeatBit releases use the same REST API contracts for the generally available tools exposed by this server. The feature-flag-gated `AddFlagTargetUser` tool is experimental and is not part of this compatibility guarantee.
+
+Use `v0.2.2` or later when creating feature flags. Earlier MCP releases, including `v0.2.1`, omitted the boolean variation fields required by FeatBit and could return HTTP 500. See [issue #2](https://github.com/featbit/featbit-mcp/issues/2).
 
 ---
 
@@ -16,122 +22,51 @@ Built with .NET 10, ASP.NET Core, and Aspire.
 
 The FeatBit MCP server is publicly hosted at **`https://mcp.featbit.co/mcp`**.
 
-> **Where to find these values**:
-> - **Access token / personal token**: Use the FeatBit access token or personal token value you would send in the `Authorization` header when calling the FeatBit API directly. In some FeatBit consoles this is managed under Organization Settings → API Keys.
-> - **Organization ID**: FeatBit console → Organization Settings → General → Organization ID
+Every MCP client needs the same connection data:
 
-Set FeatBit credentials as MCP request headers. `Authorization` is forwarded as-is to the FeatBit API, so use the same access token or personal token value you would use when calling the API directly. `Organization` should be set when your FeatBit token or deployment requires an organization context. `Workspace` is also forwarded when provided. For `EvaluateFeatureFlags`, also set `X-FeatBit-Env-Secret` to the environment secret key. Do not pass credentials as MCP tool parameters.
+| Setting | Value | When required |
+|---------|-------|---------------|
+| MCP URL | `https://mcp.featbit.co/mcp` | Always |
+| `Authorization` header | The exact access-token or personal-token value accepted by your FeatBit API | Management tools |
+| `Organization` header | FeatBit Organization ID | When required by the token or deployment |
+| `Workspace` header | FeatBit Workspace ID | Optional deployment context |
+| `X-FeatBit-Env-Secret` header | Environment secret key | `EvaluateFeatureFlags` only |
 
----
+The server forwards these headers to FeatBit and never accepts credentials as tool parameters. You can find access tokens under **Organization Settings → API Keys** in consoles that use that layout, and the Organization ID under **Organization Settings → General**.
 
-### Remote (Hosted)
+### Codex (Hosted)
 
-Connect to the hosted server — no installation or build required.
+Codex reads MCP servers from `~/.codex/config.toml`, or from a trusted project's `.codex/config.toml`. Keep credentials in environment variables so they are not committed to the repository.
 
-#### VS Code / GitHub Copilot
+Set the required values in the environment that launches Codex:
 
-Add or update `.vscode/mcp.json` in your workspace:
-
-```json
-{
-  "servers": {
-    "featbit": {
-      "type": "http",
-      "url": "https://mcp.featbit.co/mcp",
-      "headers": {
-        "Authorization": "${input:featbitAccessToken}",
-        "Organization": "${input:featbitOrgId}"
-      }
-    }
-  },
-  "inputs": [
-    {
-      "id": "featbitAccessToken",
-      "type": "promptString",
-      "description": "FeatBit access token or personal token",
-      "password": true
-    },
-    {
-      "id": "featbitOrgId",
-      "type": "promptString",
-      "description": "FeatBit Organization ID"
-    }
-  ]
-}
+```powershell
+$env:FEATBIT_AUTHORIZATION = "YOUR_AUTHORIZATION_HEADER_VALUE"
+$env:FEATBIT_ORGANIZATION_ID = "YOUR_ORGANIZATION_ID"
 ```
-
-[VS Code MCP Guide](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-
-#### Claude Code
-
-Add to your project `.mcp.json` or run:
 
 ```bash
-claude mcp add --transport http featbit https://mcp.featbit.co/mcp
+export FEATBIT_AUTHORIZATION='YOUR_AUTHORIZATION_HEADER_VALUE'
+export FEATBIT_ORGANIZATION_ID='YOUR_ORGANIZATION_ID'
 ```
 
-To include your access token or personal token, edit `.mcp.json`:
+Then add:
 
-```json
-{
-  "mcpServers": {
-    "featbit": {
-      "type": "http",
-      "url": "https://mcp.featbit.co/mcp",
-      "headers": {
-        "Authorization": "YOUR_FEATBIT_ACCESS_TOKEN_OR_PERSONAL_TOKEN",
-        "Organization": "YOUR_ORGANIZATION_ID"
-      }
-    }
-  }
-}
+```toml
+[mcp_servers.featbit]
+url = "https://mcp.featbit.co/mcp"
+env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION", Organization = "FEATBIT_ORGANIZATION_ID" }
 ```
 
-[Claude Code MCP Guide](https://docs.anthropic.com/en/docs/claude-code/mcp)
+If you also need workspace context or `EvaluateFeatureFlags`, set `FEATBIT_WORKSPACE_ID` and `FEATBIT_ENV_SECRET`, then replace `env_http_headers` with:
 
-#### Cursor
-
-Add to `~/.cursor/mcp.json` (macOS/Linux) or `%USERPROFILE%\.cursor\mcp.json` (Windows):
-
-```json
-{
-  "mcpServers": {
-    "featbit": {
-      "url": "https://mcp.featbit.co/mcp",
-      "headers": {
-        "Authorization": "YOUR_FEATBIT_ACCESS_TOKEN_OR_PERSONAL_TOKEN",
-        "Organization": "YOUR_ORGANIZATION_ID"
-      }
-    }
-  }
-}
+```toml
+env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION", Organization = "FEATBIT_ORGANIZATION_ID", Workspace = "FEATBIT_WORKSPACE_ID", "X-FeatBit-Env-Secret" = "FEATBIT_ENV_SECRET" }
 ```
 
-[Cursor MCP Guide](https://docs.cursor.com/context/model-context-protocol)
+Restart Codex after changing its environment. Run `codex mcp list` or use `/mcp` in Codex to verify the connection.
 
-#### Codex CLI
-
-Add via CLI:
-
-```bash
-codex mcp add featbit --url "https://mcp.featbit.co/mcp"
-```
-
-Or add to `~/.codex/mcp_servers.json`:
-
-```json
-{
-  "featbit": {
-    "url": "https://mcp.featbit.co/mcp",
-    "headers": {
-      "Authorization": "YOUR_FEATBIT_ACCESS_TOKEN_OR_PERSONAL_TOKEN",
-      "Organization": "YOUR_ORGANIZATION_ID"
-    }
-  }
-}
-```
-
-[Codex MCP Guide](https://platform.openai.com/docs/codex)
+[Codex MCP documentation](https://learn.chatgpt.com/docs/extend/mcp)
 
 ---
 
@@ -172,56 +107,14 @@ Run the server from source when you need a custom `BaseUrl` pointing to a self-h
 
    The server starts on `http://localhost:5180`.
 
-#### Connect AI Clients to Local Server
+#### Connect Codex to the Local Server
 
-**VS Code / GitHub Copilot** (`.vscode/mcp.json`):
+Reuse the same environment variables and point Codex at the local endpoint:
 
-```json
-{
-  "servers": {
-    "featbit-local": {
-      "type": "http",
-      "url": "http://localhost:5180/mcp",
-      "headers": {
-        "Authorization": "YOUR_FEATBIT_ACCESS_TOKEN_OR_PERSONAL_TOKEN",
-        "Organization": "YOUR_ORGANIZATION_ID"
-      }
-    }
-  }
-}
-```
-
-**Claude Code** (`.mcp.json`):
-
-```json
-{
-  "mcpServers": {
-    "featbit-local": {
-      "type": "http",
-      "url": "http://localhost:5180/mcp",
-      "headers": {
-        "Authorization": "YOUR_FEATBIT_ACCESS_TOKEN_OR_PERSONAL_TOKEN",
-        "Organization": "YOUR_ORGANIZATION_ID"
-      }
-    }
-  }
-}
-```
-
-**Cursor** (`~/.cursor/mcp.json`):
-
-```json
-{
-  "mcpServers": {
-    "featbit-local": {
-      "url": "http://localhost:5180/mcp",
-      "headers": {
-        "Authorization": "YOUR_FEATBIT_ACCESS_TOKEN_OR_PERSONAL_TOKEN",
-        "Organization": "YOUR_ORGANIZATION_ID"
-      }
-    }
-  }
-}
+```toml
+[mcp_servers.featbit_local]
+url = "http://localhost:5180/mcp"
+env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION", Organization = "FEATBIT_ORGANIZATION_ID" }
 ```
 
 ---

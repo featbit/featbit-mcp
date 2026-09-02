@@ -1,8 +1,15 @@
 # AI Agent Test Specification - FeatBit MCP Tools
 
-This repository does not keep a dedicated test project for the MCP server.
+This repository keeps fast, isolated contract tests in
+`tests/FeatBit.McpServer.Tests`. Run them with:
 
-Validation is performed by an AI agent that starts the MCP server locally, connects over HTTP MCP transport, invokes tools exactly as an MCP client would, and records observed behavior.
+```powershell
+dotnet test FeatBit\FeatBit.sln
+```
+
+The live validation in this document complements those tests. An AI agent starts
+the MCP server locally, connects over HTTP MCP transport, invokes tools exactly as
+an MCP client would, and records observed behavior against a real FeatBit service.
 
 ## Objective
 
@@ -118,7 +125,7 @@ initialize
 
 - HTTP status is `200`
 - Response contains server info
-- Response contains `Mcp-Session-Id`
+- Response does not contain `Mcp-Session-Id`; the server uses stateless HTTP transport
 
 ### Flow Step 4: Tool Discovery
 

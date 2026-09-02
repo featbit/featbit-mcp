@@ -3,6 +3,7 @@ using FeatBit.FeatureFlags;
 using FeatBit.McpServer.Infrastructure;
 using FeatBit.McpServer.Middleware;
 using FeatBit.Sdk.Server.DependencyInjection;
+using ModelContextProtocol.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,8 @@ builder.Services.AddScoped<IFeatureFlagEvaluator, FeatureFlagEvaluator>();
 // Add the MCP server with HTTP transport
 builder.Services
     .AddMcpServer()
-    .WithHttpTransport()
+    .WithHttpTransport(options =>
+        options.SessionMode = HttpServerSessionMode.Stateless)
     .WithToolsFromAssembly()
     .WithRequestFilters(r => r.AddMcpToolFlagGateFilter(typeof(Program).Assembly));
 

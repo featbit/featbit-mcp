@@ -67,6 +67,9 @@ jobs:
     
     - name: Build solution
       run: dotnet build ./FeatBit/FeatBit.sln --configuration Release --no-restore
+
+    - name: Test solution
+      run: dotnet test ./FeatBit/FeatBit.sln --configuration Release --no-build
     
     - name: Publish application
       run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
