@@ -13,7 +13,7 @@ This document maps every tool exposed by `FeatBit.McpServer` to the FeatBit REST
 
 ### Management API
 
-All project, feature flag, targeting, and audit-log requests use `FeatBitApi:BaseUrl` as their base URL. The default is:
+All project, environment, feature flag, targeting, and audit-log requests use `FeatBitApi:BaseUrl` as their base URL. The default is:
 
 ```text
 https://app-api.featbit.co
@@ -44,7 +44,9 @@ For this request only, the server reads the incoming `X-FeatBit-Env-Secret` head
 | MCP tool | C# method | Purpose | FeatBit REST API request |
 |---|---|---|---|
 | `get_projects` | `GetProjects` | List projects in the current organization | `GET /api/v1/projects` |
+| `create_project` | `CreateProject` | Create a project | `POST /api/v1/projects` |
 | `get_project` | `GetProject` | Get one project, including its environments and credentials | `GET /api/v1/projects/{projectId}` |
+| `create_environment` | `CreateEnvironment` | Create an environment under a project | `POST /api/v1/projects/{projectId}/envs` |
 | `get_project_feature_flags` | `GetProjectFeatureFlags` | List flags across every environment in a project | `GET /api/v1/projects/{projectId}`, then `GET /api/v1/envs/{envId}/feature-flags` for each environment |
 | `get_feature_flags` | `GetFeatureFlags` | List and filter flags in one environment | `GET /api/v1/envs/{envId}/feature-flags` |
 | `get_feature_flag` | `GetFeatureFlag` | Get one flag by key | `GET /api/v1/envs/{envId}/feature-flags/{key}` |
@@ -68,6 +70,25 @@ Returns all projects visible under the authentication and organization context o
 ```http
 GET /api/v1/projects
 ```
+
+### `create_project`
+
+Creates a project with a display name and immutable key:
+
+```http
+POST /api/v1/projects
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Checkout service",
+  "key": "checkout-service"
+}
+```
+
+The request is sent exactly once. The tool does not search for or adopt an existing project with the same key.
+FeatBit can include server-created default environments in the created project response; use `get_project` to inspect the canonical environment list.
 
 ### `get_project`
 
@@ -102,6 +123,27 @@ The optional MCP parameters map to the environment requests as follows:
 | `fetchAll` | Not sent | Repeats requests for every environment, starting at `pageIndex`, until the remaining pages are collected |
 
 When `fetchAll` is `true`, the default page index is `0` and the default page size is `100` if they are omitted. The tool returns one aggregate object containing project metadata and a result for each environment.
+
+## Environment tools
+
+### `create_environment`
+
+Creates an environment under an existing project:
+
+```http
+POST /api/v1/projects/{projectId}/envs
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Staging",
+  "key": "staging",
+  "description": "Pre-production validation"
+}
+```
+
+The environment key is immutable within its parent project. When `description` is omitted, the MCP server sends it as an empty string. Server-generated secrets and environment settings are not included in the request. The request is sent exactly once and does not adopt an existing environment with the same key.
 
 ## Feature flag tools
 
@@ -348,8 +390,11 @@ Request-building behavior:
 ## Implementation sources
 
 - [Project tools](../FeatBit/FeatBit.McpServer/Tools/FeatBitApiTools.Projects.cs)
+- [Environment tools](../FeatBit/FeatBit.McpServer/Tools/FeatBitApiTools.Environments.cs)
 - [Feature flag and targeting tools](../FeatBit/FeatBit.McpServer/Tools/FeatBitApiTools.FeatureFlags.cs)
 - [Audit-log tools](../FeatBit/FeatBit.McpServer/Tools/FeatBitApiTools.AuditLogs.cs)
 - [Evaluation tool](../FeatBit/FeatBit.McpServer/Tools/FeatBitApiTools.Evaluation.cs)
 - [REST client and header forwarding](../FeatBit/FeatBit.McpServer/Infrastructure/FeatBitApiClient.cs)
 - [Route and payload contract tests](../tests/FeatBit.McpServer.Tests)
+
+The provisioning request contracts were cross-checked against FeatBit's [Terraform Project client](https://github.com/featbit/terraform-provider-featbit/blob/18d1fa44594f5069761fec10be435bfc36677e9c/internal/client/projects.go) and [Terraform Environment client](https://github.com/featbit/terraform-provider-featbit/blob/18d1fa44594f5069761fec10be435bfc36677e9c/internal/client/environments.go).

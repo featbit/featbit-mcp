@@ -126,7 +126,9 @@ The table below is a quick overview. For the exact FeatBit REST endpoints, query
 | Tool | Description | Parameters |
 |------|-------------|------------|
 | `GetProjects` | List all projects within the current organization | — |
+| `CreateProject` | Create a project with a display name and immutable key | `name` *(required)*, `key` *(required)* |
 | `GetProject` | Get a project by ID with its environments and credentials (Server Key, Client Key) | `projectId` *(required)* |
+| `CreateEnvironment` | Create an environment under a project with a display name, immutable key, and optional description | `projectId` *(required)*, `name` *(required)*, `key` *(required)*, `description` |
 | `GetProjectFeatureFlags` | List feature flags across every environment in a project. Supports filtering by name/key, tags, pagination, and all-page fetching per environment | `projectId` *(required)*, `name`, `tags`, `pageIndex`, `pageSize`, `fetchAll` |
 | `GetFeatureFlags` | List feature flags in an environment. Supports filtering by name/key, tags, enabled/disabled status, archived status, sorting, pagination, and all-page fetching | `envId` *(required)*, `name`, `tags`, `isEnabled`, `isArchived`, `sortBy`, `pageIndex`, `pageSize`, `fetchAll` |
 | `GetFeatureFlag` | Get a single feature flag by key | `envId` *(required)*, `key` *(required)* |
@@ -157,6 +159,7 @@ Use this flow:
 4. If the deletion date is encoded in a tag or description, compare it with today's date and report matching flags.
 5. If change history is needed, call `GetFeatureFlagAuditLogs` with the environment ID and `flagKey`.
 6. Do not archive or toggle flags unless the user explicitly asks for that action.
+7. Do not create projects or environments unless the user explicitly asks for provisioning.
 
 ---
 

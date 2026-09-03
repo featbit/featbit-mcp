@@ -14,6 +14,17 @@ public partial class FeatBitApiTools
         => _apiClient.GetAsync("/api/v1/projects");
 
     [McpServerTool]
+    [Description("Create a project with the given display name and immutable key.")]
+    public Task<string> CreateProject(
+        [Description("The display name of the project")]
+        string name,
+        [Description("The unique, immutable key of the project")]
+        string key)
+        => _apiClient.PostAsync(
+            "/api/v1/projects",
+            JsonSerializer.Serialize(new { name, key }));
+
+    [McpServerTool]
     [Description("Get a single project by ID with its environments and credentials (Server Key, Client Key).")]
     public Task<string> GetProject(
         [Description("The unique identifier (UUID) of the project")]

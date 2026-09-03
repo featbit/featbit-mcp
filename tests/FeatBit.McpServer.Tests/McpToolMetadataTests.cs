@@ -13,7 +13,9 @@ public class McpToolMetadataTests
     [
         "AddFlagTargetUser",
         "ArchiveFeatureFlag",
+        "CreateEnvironment",
         "CreateFeatureFlag",
+        "CreateProject",
         "EvaluateFeatureFlags",
         "GetAuditLogs",
         "GetFeatureFlag",

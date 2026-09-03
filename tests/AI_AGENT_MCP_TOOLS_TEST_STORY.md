@@ -13,9 +13,12 @@ an MCP client would, and records observed behavior against a real FeatBit servic
 
 ## Objective
 
-Prove that `FeatBit.McpServer` can safely and correctly expose the FeatBit API capabilities that exist in `featbit-cli`:
+Prove that `FeatBit.McpServer` can safely and correctly expose its current
+project, environment, feature flag, evaluation, and audit capabilities:
 
 - discover MCP tools through `tools/list`
+- create an isolated project
+- create an environment under that project
 - list projects
 - get a single project by ID
 - list feature flags in an environment
@@ -37,17 +40,26 @@ Prove that `FeatBit.McpServer` can safely and correctly expose the FeatBit API c
 4. Stop only when a blocking failure makes later cases meaningless.
 5. Prefer MCP `tools/call` over direct REST calls; direct REST calls do not satisfy this story.
 6. Never write the full token, environment secret, or `Authorization` header into reports or repository files.
+7. Never archive a Feature Flag as general cleanup. The only permitted automatic archive is the dedicated `archive_feature_flag` test step, and it requires explicit operator approval immediately before the call.
 
-## Dedicated Test Project
+## Run-Scoped Test Resources
 
-All live tests in this story must use the dedicated FeatBit test project:
+Every live run must create and use an isolated Project and Environment. Never run
+the mutation steps against an existing business Project or Environment.
 
 | Name | Value |
 | --- | --- |
-| `PROJECT_KEY` | `featbit-cli-testing` |
+| `RUN_ID` | `<yyyyMMdd-HHmmss>-<short-random-suffix>` |
+| `PROJECT_KEY` | `mcp-e2e-<RUN_ID>` |
+| `ENVIRONMENT_KEY` | `e2e` |
 | `PROJECT_ID` | local/runtime only; redact in reports |
+| `ENVIRONMENT_ID` | local/runtime only; redact in reports |
 | `HOST` | `https://app-api.featbit.co` |
 | `MCP_URL` | `http://localhost:5180/mcp` |
+
+The current MCP tool inventory cannot delete Projects or Environments. After the
+run, leave both resources available for inspection and report their names and keys
+to the operator for manual cleanup.
 
 ## Local Configuration
 
@@ -138,7 +150,9 @@ tools/list
 **Expected tools**
 
 - `get_projects`
+- `create_project`
 - `get_project`
+- `create_environment`
 - `get_project_feature_flags`
 - `get_feature_flags`
 - `get_feature_flag`
@@ -152,7 +166,59 @@ tools/list
 
 `add_flag_target_user` may also be present when enabled by feature flag gate.
 
-### Flow Step 5: Discover Project And Environment
+### Flow Step 5: Create Run-Scoped Project
+
+**MCP tool**
+
+```text
+create_project
+```
+
+**Arguments**
+
+```json
+{
+  "name": "MCP E2E <RUN_ID>",
+  "key": "mcp-e2e-<RUN_ID>"
+}
+```
+
+**Expected**
+
+- Response success is `true`
+- Returned Project name and key match the generated values
+- Returned Project ID is a non-empty UUID
+- Project ID is retained only in memory and redacted from the report
+- Server-created default Environments may be present, but none is selected as the run-scoped Environment
+
+### Flow Step 6: Create Run-Scoped Environment
+
+**MCP tool**
+
+```text
+create_environment
+```
+
+**Arguments**
+
+```json
+{
+  "projectId": "<created-project-id>",
+  "name": "MCP E2E",
+  "key": "e2e",
+  "description": "Created by FeatBit MCP live integration test <RUN_ID>"
+}
+```
+
+**Expected**
+
+- Response success is `true`
+- Returned Environment ID is a non-empty UUID
+- Returned name and description match the request
+- The create response may omit the Environment key; the next canonical Project read must confirm it
+- Any returned Environment secret is retained only in memory and redacted from the report
+
+### Flow Step 7: Confirm Project And Environment
 
 **MCP tools**
 
@@ -163,12 +229,14 @@ get_project
 
 **Expected**
 
-- `get_projects` contains project key `featbit-cli-testing`
-- `get_project` returns environments
-- Agent selects one environment, preferably key `dev`
-- Project ID is redacted in the report
+- `get_projects` contains the generated `PROJECT_KEY`
+- `get_project` returns the generated Project and its Environments
+- Exactly one Environment has key `e2e`
+- The confirmed `e2e` Environment ID is used by every remaining environment-scoped step
+- The Environment secret used for evaluation is discovered dynamically and never written to the report
+- Project and Environment IDs are redacted in the report
 
-### Flow Step 6: Create Disposable Feature Flag
+### Flow Step 8: Create Disposable Feature Flag
 
 **MCP tool**
 
@@ -195,7 +263,7 @@ create_feature_flag
 - Returned tags include `mcp` and `e2e`
 - Returned variations include boolean `true` and `false`
 
-### Flow Step 7: Read Created Flag
+### Flow Step 9: Read Created Flag
 
 **MCP tools**
 
@@ -211,7 +279,7 @@ get_feature_flag
 - Single flag query returns the test flag by key
 - Environment list query returns either full response or a shaped response, depending on the `flag-list` feature flag variation
 
-### Flow Step 8: Toggle, Rollout, And Re-enable
+### Flow Step 10: Toggle, Rollout, And Re-enable
 
 **MCP tools**
 
@@ -228,7 +296,7 @@ toggle_feature_flag
 - Rollout update with 70/30 assignments returns success
 - Re-enable returns a successful API response
 
-### Flow Step 9: Evaluate
+### Flow Step 11: Evaluate
 
 **MCP tool**
 
@@ -242,7 +310,35 @@ evaluate_feature_flags
 - For newly created flags, allow a short synchronization delay before evaluation
 - The result should include the test flag key and a non-empty variation
 
-### Flow Step 10: Archive And Confirm Cleanup
+### Flow Step 12: Manual Inspection And Archive Approval
+
+Before testing `archive_feature_flag`, pause the run and show the operator:
+
+- Project name and key
+- Environment name and key
+- Generated Feature Flag name and key
+- Current enabled and archived state
+- Tags and variation names; do not expose internal IDs
+- The exact Feature Flag that the next step proposes to archive
+
+Use this handoff format:
+
+```text
+Inspection required before archive test
+Project: MCP E2E <RUN_ID>
+Project key: mcp-e2e-<RUN_ID>
+Environment: MCP E2E
+Environment key: e2e
+Feature Flag: MCP E2E Test Flag
+Feature Flag key: <generated-flag-key>
+Proposed action: archive this Feature Flag to test archive_feature_flag
+```
+
+Wait for explicit operator approval before continuing. Viewing the message or
+failing to respond does not count as approval. If approval is not given, preserve
+the Feature Flag and record Step 13 as `not_run_pending_approval`.
+
+### Flow Step 13: Test Archive Feature Flag
 
 **MCP tools**
 
@@ -255,8 +351,9 @@ get_feature_flags
 
 - Archive returns success
 - Default non-archived flag list no longer returns the test flag
+- This is the only Feature Flag the automated run may archive
 
-### Flow Step 11: Audit Logs
+### Flow Step 14: Audit Logs
 
 **MCP tools**
 
@@ -271,7 +368,7 @@ get_audit_logs
 - Returned logs reference `FeatureFlag`
 - Direct audit log query by `refId` returns the same count as key-based feature flag audit log query
 
-### Flow Step 12: Negative Validation
+### Flow Step 15: Negative Validation
 
 **MCP tool**
 
@@ -321,12 +418,11 @@ get_project
 create_feature_flag
 get_project_feature_flags
 get_feature_flag_audit_logs
-archive_feature_flag
 ```
 
 **Required reasoning**
 
-1. Resolve the current project by key `featbit-cli-testing`.
+1. Resolve the run-scoped Project by the generated `PROJECT_KEY`.
 2. Call `get_project_feature_flags` with `tags: "mcp-delete-check"` and `fetchAll: true`.
 3. Parse deletion date from flag metadata. For this test, use `delete-after: yyyy-MM-dd` in `description`.
 4. Compare deletion date with the execution date.
@@ -341,8 +437,30 @@ archive_feature_flag
 - The expired fixture is reported as `due`.
 - The active fixture is reported as `not_due`.
 - The report includes the table and row counts.
-- Both disposable flags are archived after the scenario.
-- A post-cleanup default query no longer returns the disposable flags.
+- Both fixture flags remain unchanged and available for operator inspection.
+- The automated run does not archive either fixture flag.
+
+## Cleanup Requirements
+
+- Do not archive Feature Flags as cleanup, including after a failed assertion.
+- The only permitted automated archive is Flow Step 13, whose purpose is to test `archive_feature_flag`; it must not run without the explicit approval required by Flow Step 12.
+- Leave every other generated Feature Flag unchanged for operator inspection and manual cleanup.
+- Do not delete the run-scoped Project or Environment automatically. Preserve them so the operator can inspect the completed E2E run.
+- At the end of the run, clearly tell the operator to open the FeatBit SaaS Projects page and inspect the exact Project, Environment, and generated Feature Flags:
+
+  ```text
+  Manual cleanup required
+  Project: MCP E2E <RUN_ID>
+  Project key: mcp-e2e-<RUN_ID>
+  Environment: MCP E2E
+  Environment key: e2e
+  Feature Flags:
+  - <flag-name> (key: <flag-key>, enabled: <true-or-false>, archived: <true-or-false>)
+  ```
+
+- Record the Project, Environment, and Feature Flag names and keys in the report; never record their IDs or secrets.
+- Mark retained resources as `awaiting_manual_cleanup`. The operator decides when to archive Feature Flags and delete the Project after inspection.
+- Do not schedule repeated or unattended runs while cleanup remains manual.
 
 ## Report Artifact
 
@@ -355,8 +473,9 @@ Minimum report sections:
 - MCP transport setup
 - Tool discovery
 - Flow results
-- Disposable flag lifecycle
-- Cleanup status
+- Run-scoped Project and Environment lifecycle
+- Disposable flag lifecycle, including whether the explicitly approved archive test ran
+- Manual cleanup handoff, including exact Project, Environment, and Feature Flag names, keys, and current states
 - Findings
 - Evidence snippets
 
