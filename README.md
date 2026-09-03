@@ -12,9 +12,11 @@ Built with .NET 10, ASP.NET Core, Aspire, and MCP C# SDK 2.2.0.
 
 ## Compatibility
 
-FeatBit MCP Server `v0.2.2` supports FeatBit `v5.4.4` through `v5.4.8`. These FeatBit releases use the same REST API contracts for the generally available tools exposed by this server. The feature-flag-gated `AddFlagTargetUser` tool is experimental and is not part of this compatibility guarantee.
+FeatBit MCP Server `v0.3.0` supports FeatBit `v5.4.4` and later. FeatBit `v5.4.4` is the minimum supported version for the generally available tools exposed by this server. The feature-flag-gated `AddFlagTargetUser` tool is experimental and is not part of this compatibility guarantee.
 
 Use `v0.2.2` or later when creating feature flags. Earlier MCP releases, including `v0.2.1`, omitted the boolean variation fields required by FeatBit and could return HTTP 500. See [issue #2](https://github.com/featbit/featbit-mcp/issues/2).
+
+Use `v0.3.0` or later for the `CreateProject` and `CreateEnvironment` tools.
 
 ---
 
@@ -33,6 +35,8 @@ Every MCP client needs the same connection data:
 | `X-FeatBit-Env-Secret` header | Environment secret key | `EvaluateFeatureFlags` only |
 
 The server forwards these headers to FeatBit and never accepts credentials as tool parameters. You can find access tokens under **Organization Settings → API Keys** in consoles that use that layout, and the Organization ID under **Organization Settings → General**.
+
+Access tokens must grant the resource permissions required by each operation. Project provisioning requires `CreateProject`; creating an environment requires `CreateEnv`. When an agent creates projects with generated keys, the token's Project resource scope must cover those new projects.
 
 ### Codex (Hosted)
 
