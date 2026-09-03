@@ -121,6 +121,8 @@ env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION", Organization = "FE
 
 ## Available Tools
 
+The table below is a quick overview. For the exact FeatBit REST endpoints, query parameters, request bodies, authentication forwarding, and multi-request tool behavior, see the [MCP Tools and REST API Reference](docs/mcp-tools-reference.md).
+
 | Tool | Description | Parameters |
 |------|-------------|------------|
 | `GetProjects` | List all projects within the current organization | — |
