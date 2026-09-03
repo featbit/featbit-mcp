@@ -20,6 +20,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\..\FeatBit\FeatBit.McpServer\FeatBit.McpServer.csproj" />
+    <ProjectReference Include="..\FeatBit.McpServer.E2ETests\FeatBit.McpServer.E2ETests.csproj" />
   </ItemGroup>
 
 </Project>

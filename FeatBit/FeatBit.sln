@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatBit.FeatureFlags", "Fea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatBit.McpServer.Tests", "..\tests\FeatBit.McpServer.Tests\FeatBit.McpServer.Tests.csproj", "{A5B5B654-1D64-45A8-A044-74C11523081A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatBit.McpServer.E2ETests", "..\tests\FeatBit.McpServer.E2ETests\FeatBit.McpServer.E2ETests.csproj", "{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{A5B5B654-1D64-45A8-A044-74C11523081A}.Release|x64.Build.0 = Release|Any CPU
 		{A5B5B654-1D64-45A8-A044-74C11523081A}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5B5B654-1D64-45A8-A044-74C11523081A}.Release|x86.Build.0 = Release|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Debug|x64.Build.0 = Debug|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Debug|x86.Build.0 = Debug|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Release|x64.ActiveCfg = Release|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Release|x64.Build.0 = Release|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Release|x86.ActiveCfg = Release|Any CPU
+		{20BB4D7D-87D4-4573-AB9E-F7D45A2F342E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

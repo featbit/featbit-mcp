@@ -7,9 +7,62 @@ This repository keeps fast, isolated contract tests in
 dotnet test FeatBit\FeatBit.sln
 ```
 
-The live validation in this document complements those tests. An AI agent starts
-the MCP server locally, connects over HTTP MCP transport, invokes tools exactly as
-an MCP client would, and records observed behavior against a real FeatBit service.
+The live validation in this document complements those tests. The executable E2E
+runner (or an AI agent following the same story) starts the MCP server locally,
+connects over HTTP MCP transport, invokes tools exactly as an MCP client would,
+and records observed behavior against a real FeatBit service.
+
+## Executable Runner
+
+The local-only Console runner lives in `tests/FeatBit.McpServer.E2ETests`. It is
+not an xUnit project and is never discovered by `dotnet test`.
+
+Run the full live scenario from the repository root:
+
+```powershell
+dotnet run --project tests\FeatBit.McpServer.E2ETests -- --execute
+```
+
+To use a token stored in an environment variable without copying the secret into
+the config file or command line, pass only the variable name:
+
+```powershell
+dotnet run --project tests\FeatBit.McpServer.E2ETests -- --execute --token-env FEATBIT_TEST_SERVICE_TOKEN
+```
+
+The environment variable value overrides only the `token` property. The API host,
+organization, and optional workspace still come from the configuration file.
+
+The `--execute` acknowledgement is mandatory. Without it, the program prints
+usage and makes no SaaS calls. By default, the runner builds, starts, and later
+stops its own local MCP Server process. To connect to a server you started
+yourself, use:
+
+```powershell
+dotnet run --project tests\FeatBit.McpServer.E2ETests -- --execute --use-existing-server
+```
+
+To verify the build, MCP initialization, tool inventory, and a locally validated
+`tools/call` without loading credentials or issuing any FeatBit REST API request,
+run:
+
+```powershell
+dotnet run --project tests\FeatBit.McpServer.E2ETests -- --preflight
+```
+
+Safety behavior:
+
+- refuses to run when the `CI` environment variable indicates a CI environment
+- refuses to send credentials to a non-loopback MCP URL
+- performs no runner-level mutation retries; each mutation is invoked only where the ordered story requires it
+- never deletes Projects or Environments
+- never archives a Feature Flag as cleanup
+- pauses before the dedicated archive test and requires the exact displayed approval phrase
+- writes a sanitized report to `tests/reports/<RUN_ID>-featbit-mcp-e2e.md`
+
+Exit code `0` means the complete scenario passed. Exit code `1` means a failure
+or cancellation occurred. Exit code `2` means the scenario completed but the
+archive test was skipped because explicit approval was not given.
 
 ## Objective
 
@@ -75,7 +128,8 @@ Expected local-only shape:
 {
   "host": "https://app-api.featbit.co",
   "token": "<redacted>",
-  "organization": "<organization-id>"
+  "organization": "<organization-id>",
+  "workspace": "<optional-workspace-id>"
 }
 ```
 
@@ -249,9 +303,9 @@ create_feature_flag
 ```json
 {
   "envId": "<env-id>",
-  "name": "MCP E2E Test Flag",
-  "key": "mcp-e2e-<yyyyMMdd-HHmmss>",
-  "description": "Created by Codex MCP live integration test",
+  "name": "MCP E2E Main <RUN_ID>",
+  "key": "mcp-e2e-main-<RUN_ID>",
+  "description": "Created by FeatBit MCP live integration test <RUN_ID>",
   "tags": "mcp,e2e"
 }
 ```

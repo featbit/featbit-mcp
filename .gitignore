@@ -60,6 +60,9 @@ CodeCoverage/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# Local live E2E reports contain tenant-specific resource names and keys
+tests/reports/*-featbit-mcp-e2e.md
+
 # NUnit
 *.VisualState.xml
 TestResult.xml
