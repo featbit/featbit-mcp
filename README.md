@@ -24,8 +24,6 @@ PowerShell:
 
 ```powershell
 $env:FeatBitApi__BaseUrl = "https://featbit-api.example.com"
-$env:FeatBit__EventUri = "https://featbit-evaluation.example.com"
-$env:FeatBit__StreamingUri = "wss://featbit-evaluation.example.com"
 $env:ASPNETCORE_URLS = "http://localhost:5180"
 dotnet run --project FeatBit/FeatBit.McpServer --no-launch-profile
 ```
@@ -34,8 +32,6 @@ Bash:
 
 ```bash
 export FeatBitApi__BaseUrl="https://featbit-api.example.com"
-export FeatBit__EventUri="https://featbit-evaluation.example.com"
-export FeatBit__StreamingUri="wss://featbit-evaluation.example.com"
 export ASPNETCORE_URLS="http://localhost:5180"
 dotnet run --project FeatBit/FeatBit.McpServer --no-launch-profile
 ```
@@ -63,18 +59,13 @@ Aspire displays the assigned MCP Server endpoint in its dashboard.
 | Configuration key | Environment variable | Purpose |
 |---|---|---|
 | `FeatBitApi:BaseUrl` | `FeatBitApi__BaseUrl` | Base URL of the FeatBit management API used by project, environment, flag, targeting, and audit-log tools |
-| `FeatBit:EventUri` | `FeatBit__EventUri` | Base URL of the FeatBit evaluation service; required by `EvaluateFeatureFlags` and SDK events |
-| `FeatBit:StreamingUri` | `FeatBit__StreamingUri` | WebSocket URL used by the FeatBit SDK for MCP Server release flags |
-| `FeatBit:EnvSecret` | `FeatBit__EnvSecret` | Optional environment secret used by the MCP Server's own release flags |
-| `FeatBit:StartWaitTimeSeconds` | `FeatBit__StartWaitTimeSeconds` | Maximum SDK initialization wait; defaults to `3` seconds |
+| `FeatBit:EventUri` | `FeatBit__EventUri` | Base URL of the FeatBit evaluation service; needed only by `EvaluateFeatureFlags` |
 | `ASPNETCORE_URLS` | `ASPNETCORE_URLS` | Address on which the MCP Server listens |
 
-For example, enable the evaluation tool and the MCP Server's own release flags with:
+If you use `EvaluateFeatureFlags`, point it at your FeatBit evaluation service:
 
 ```powershell
 $env:FeatBit__EventUri = "https://featbit-evaluation.example.com"
-$env:FeatBit__StreamingUri = "wss://featbit-evaluation.example.com"
-$env:FeatBit__EnvSecret = "YOUR_MCP_SERVER_ENVIRONMENT_SECRET"
 ```
 
 Do not commit secrets to `appsettings.json`. The repository ignores `appsettings.Development.json` and other environment-specific appsettings files for local configuration.
@@ -86,13 +77,11 @@ The MCP client supplies FeatBit credentials as HTTP headers. The MCP Server forw
 | Header | Required for | Value |
 |---|---|---|
 | `Authorization` | Management tools | The exact access-token or personal-token value accepted by your FeatBit API |
-| `Organization` | Organization-scoped requests | FeatBit Organization ID |
-| `Workspace` | Deployments that require workspace context | FeatBit Workspace ID |
 | `X-FeatBit-Env-Secret` | `EvaluateFeatureFlags` only | Secret of the environment whose flags should be evaluated |
 
-Token permissions still apply. Creating projects and environments requires `CreateProject` and `CreateEnv`; the token's project scope must also cover generated project keys.
+The examples use a FeatBit access token. FeatBit resolves the organization and workspace from that token, so their IDs do not need to be configured separately.
 
-`FeatBit__EnvSecret` configures release flags for the MCP Server itself. `X-FeatBit-Env-Secret` is a client request header used to evaluate flags in the requested FeatBit environment.
+Token permissions still apply. Creating projects and environments requires `CreateProject` and `CreateEnv`; the token's project scope must also cover generated project keys.
 
 ### Codex example
 
@@ -100,7 +89,6 @@ Set credentials in the environment that launches Codex:
 
 ```powershell
 $env:FEATBIT_AUTHORIZATION = "YOUR_AUTHORIZATION_HEADER_VALUE"
-$env:FEATBIT_ORGANIZATION_ID = "YOUR_ORGANIZATION_ID"
 ```
 
 Then add the self-hosted MCP endpoint to `~/.codex/config.toml` or a trusted project's `.codex/config.toml`:
@@ -108,10 +96,10 @@ Then add the self-hosted MCP endpoint to `~/.codex/config.toml` or a trusted pro
 ```toml
 [mcp_servers.featbit]
 url = "http://localhost:5180/mcp"
-env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION", Organization = "FEATBIT_ORGANIZATION_ID" }
+env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION" }
 ```
 
-For a remote self-hosted deployment, replace the URL with its public `/mcp` endpoint. Add `Workspace = "FEATBIT_WORKSPACE_ID"` or `"X-FeatBit-Env-Secret" = "FEATBIT_ENV_SECRET"` to `env_http_headers` only when those headers are needed.
+For a remote self-hosted deployment, replace the URL with its public `/mcp` endpoint. Add `"X-FeatBit-Env-Secret" = "FEATBIT_ENV_SECRET"` to `env_http_headers` only when using `EvaluateFeatureFlags`.
 
 Restart Codex after changing its environment, then run `codex mcp list` or use `/mcp` to verify the connection.
 
