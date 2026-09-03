@@ -4,12 +4,12 @@ A self-hosted [Model Context Protocol](https://modelcontextprotocol.io) server t
 
 FeatBit MCP Server `v0.3.0` supports FeatBit `v5.4.4` and later. The feature-flag-gated `AddFlagTargetUser` tool is experimental and is not part of this compatibility guarantee.
 
-## 1. Run the server
-
-### Prerequisites
+## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - A FeatBit `v5.4.4+` deployment whose API is reachable from the MCP server
+
+## 1. Run the server
 
 Clone the repository:
 
@@ -40,14 +40,6 @@ The Streamable HTTP MCP endpoint is now available at:
 http://localhost:5180/mcp
 ```
 
-To run the project with the Aspire dashboard instead, use:
-
-```bash
-dotnet run --project FeatBit/FeatBit.AppHost
-```
-
-Aspire displays the assigned MCP Server endpoint in its dashboard.
-
 For Azure or another remote host, deploy this project as an ASP.NET Core web app and expose its `/mcp` route over HTTPS. For example, an Azure App Service endpoint could be `https://your-app-name.azurewebsites.net/mcp`.
 
 ## 2. Configure
@@ -75,58 +67,24 @@ The MCP client supplies FeatBit credentials as HTTP headers. The MCP Server forw
 
 | Header | Required for | Value |
 |---|---|---|
-| `Authorization` | Management tools | The exact access-token or personal-token value accepted by your FeatBit API |
+| `Authorization` | Management tools | An active FeatBit Personal or Service access token |
 | `X-FeatBit-Env-Secret` | `EvaluateFeatureFlags` only | Secret of the environment whose flags should be evaluated |
 
-The examples use a FeatBit access token. FeatBit resolves the organization and workspace from that token, so their IDs do not need to be configured separately.
+Both Personal and Service access tokens are supported. FeatBit resolves the organization and workspace from either token, so their IDs do not need to be configured separately.
 
-Token permissions still apply. Creating projects and environments requires `CreateProject` and `CreateEnv`; the token's project scope must also cover generated project keys.
+A Personal token uses its creator's current member permissions, while a Service token uses the permissions assigned to the token. Creating projects and environments requires `CreateProject` and `CreateEnv`; the applicable project scope must also cover generated project keys.
 
-### Codex client
+### Use with a coding agent
 
-The following settings belong to the **Codex client**, on the machine running Codex. They do not configure the MCP Server itself.
-
-In `[mcp_servers.featbit]`, `mcp_servers` means “the MCP servers that Codex should connect to.” It is a client-side connection entry, not configuration read by the remote server.
-
-Set credentials in the environment that launches Codex:
-
-```powershell
-$env:FEATBIT_AUTHORIZATION = "YOUR_FEATBIT_ACCESS_OR_PERSONAL_TOKEN"
-```
-
-Then add one of the following configurations to `~/.codex/config.toml` or a trusted project's `.codex/config.toml`.
-
-When Codex and the MCP Server run on the same computer:
-
-```toml
-[mcp_servers.featbit_local]
-url = "http://localhost:5180/mcp"
-env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION" }
-```
-
-When the MCP Server is deployed to Azure or another remote host:
+Configure the MCP endpoint and a FeatBit Personal or Service access token in your coding agent. For example, add this to Codex's `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.featbit]
-url = "https://your-app-name.azurewebsites.net/mcp"
-env_http_headers = { Authorization = "FEATBIT_AUTHORIZATION" }
-```
-
-Replace `url` with the public HTTPS `/mcp` endpoint of your deployment. This value tells Codex where to send MCP requests; the remote MCP Server does not read this TOML file.
-
-`env_http_headers` tells Codex to read the value of the `FEATBIT_AUTHORIZATION` environment variable and send it as the `Authorization` HTTP header. The access token or personal token is therefore supplied at runtime without being stored in `config.toml`.
-
-Codex also supports a static header value. To store the credential directly in `config.toml`, replace the `env_http_headers` line with:
-
-```toml
+url = "http://localhost:5180/mcp"
 http_headers = { Authorization = "YOUR_FEATBIT_ACCESS_OR_PERSONAL_TOKEN" }
 ```
 
-This works, but stores the token as plaintext. Prefer `env_http_headers`, especially in a project-level `.codex/config.toml` that could be committed.
-
-`EvaluateFeatureFlags` also requires the `X-FeatBit-Env-Secret` header. Add it to whichever header map you choose.
-
-Restart Codex after changing its environment, then run `codex mcp list` or use `/mcp` to verify the connection.
+For a remote deployment, replace `url` with its public HTTPS `/mcp` endpoint. Other coding agents use the same endpoint and `Authorization` header in their MCP configuration. Keep the token secret and do not commit it.
 
 ### Hosted endpoint (optional)
 
